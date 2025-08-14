@@ -1,8 +1,12 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import {GameSearchResponse, GameSearchResult} from "@/app/lib/gameService";
 import DesignerAutoComplete from "@/app/components/DesignerAutoComplete";
+import PublisherAutocomplete from "@/app/components/PublisherAutoComplete";
+import ArtistAutoComplete from "@/app/components/ArtistAutoComplete";
+import PublisherAutoComplete from "@/app/components/PublisherAutoComplete";
 
 export default function GameSearch() {
   const [searchResults, setSearchResults] = useState<GameSearchResponse | null>(null);
@@ -17,6 +21,8 @@ export default function GameSearch() {
     limit: 10
   });
   const [selectedDesigners, setSelectedDesigners] = useState<string[]>([]);
+  const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
+  const [selectedPublishers, setSelectedPublishers] = useState<string[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async () => {
@@ -33,6 +39,16 @@ export default function GameSearch() {
       // デザイナー名をカンマ区切りで追加
       if (selectedDesigners.length > 0) {
         queryParams.append('designers', selectedDesigners.join(','));
+      }
+
+      // アーティスト名をカンマ区切りで追加
+      if (selectedArtists.length > 0) {
+        queryParams.append('artists', selectedArtists.join(','));
+      }
+
+      // パブリッシャー名をカンマ区切りで追加
+      if (selectedPublishers.length > 0) {
+        queryParams.append('publishers', selectedPublishers.join(','));
       }
 
       queryParams.append('page', searchParams.page.toString());
@@ -97,34 +113,55 @@ export default function GameSearch() {
                 className="border p-2 rounded"
             />
 
-            {/* デザイナー検索（オートコンプリート） */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                デザイナー
-              </label>
-              <DesignerAutoComplete
-                  selectedDesigners={selectedDesigners}
-                  onDesignersChange={setSelectedDesigners}
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                  type="number"
+                  placeholder="発売年（開始）"
+                  value={searchParams.yearMin}
+                  onChange={(e) => setSearchParams({ ...searchParams, yearMin: e.target.value })}
+                  className="border p-2 rounded"
+              />
+
+              <input
+                  type="number"
+                  placeholder="発売年（終了）"
+                  value={searchParams.yearMax}
+                  onChange={(e) => setSearchParams({ ...searchParams, yearMax: e.target.value })}
+                  className="border p-2 rounded"
               />
             </div>
           </div>
 
-          {/* 3行目 */}
-          <div className="grid grid-cols-2 gap-4">
-            <input
-                type="number"
-                placeholder="発売年（開始）"
-                value={searchParams.yearMin}
-                onChange={(e) => setSearchParams({ ...searchParams, yearMin: e.target.value })}
-                className="border p-2 rounded"
+          {/* 3行目: デザイナー検索 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              デザイナー
+            </label>
+            <DesignerAutoComplete
+                selectedDesigners={selectedDesigners}
+                onDesignersChange={setSelectedDesigners}
             />
+          </div>
 
-            <input
-                type="number"
-                placeholder="発売年（終了）"
-                value={searchParams.yearMax}
-                onChange={(e) => setSearchParams({ ...searchParams, yearMax: e.target.value })}
-                className="border p-2 rounded"
+          {/* 4行目: アーティスト検索 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              アーティスト
+            </label>
+            <ArtistAutoComplete
+                selectedArtists={selectedArtists}
+                onArtistsChange={setSelectedArtists}
+            />
+          </div>
+
+          {/* 5行目: パブリッシャー検索 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              パブリッシャー
+            </label>
+            <PublisherAutoComplete
+                selectedPublishers={selectedPublishers}
+                onPublishersChange={setSelectedPublishers}
             />
           </div>
         </div>
@@ -180,7 +217,7 @@ export default function GameSearch() {
   );
 }
 
-// ゲームカードコンポーネント（変更なし）
+// ゲームカードコンポーネント
 function GameCard({ game }: { game: GameSearchResult }) {
   return (
       <div className="border rounded-lg p-4 shadow-sm">
@@ -216,6 +253,18 @@ function GameCard({ game }: { game: GameSearchResult }) {
             {game.designers.length > 0 && (
                 <div className="text-sm mt-2">
                   <strong>デザイナー:</strong> {game.designers.map(d => d.name).join(', ')}
+                </div>
+            )}
+
+            {game.artists.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>アーティスト:</strong> {game.artists.map(a => a.name).join(', ')}
+                </div>
+            )}
+
+            {game.publishers.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>パブリッシャー:</strong> {game.publishers.map(p => p.name).join(', ')}
                 </div>
             )}
 
