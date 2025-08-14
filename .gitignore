@@ -158,3 +158,4 @@ $RECYCLE.BIN/
 # Linux
 *~
 .nfs*
+/app/generated/prisma

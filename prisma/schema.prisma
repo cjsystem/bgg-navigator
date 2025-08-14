@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model artists {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique @db.VarChar(255)
+  bgg_url      String?
+  created_at   DateTime?      @default(now()) @db.Timestamp(6)
+  game_artists game_artists[]
+}
+
+model awards {
+  id             Int           @id @default(autoincrement())
+  award_name     String        @db.VarChar(255)
+  award_year     Int
+  award_type     String        @db.VarChar(20)
+  award_category String?       @db.VarChar(255)
+  bgg_url        String?
+  created_at     DateTime?     @default(now()) @db.Timestamp(6)
+  game_awards    game_awards[]
+
+  @@unique([award_name, award_year, award_type, award_category])
+  @@index([award_name], map: "idx_awards_name")
+  @@index([award_type], map: "idx_awards_type")
+  @@index([award_year], map: "idx_awards_year")
+}
+
+model categories {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique @db.VarChar(255)
+  bgg_url         String?
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  game_categories game_categories[]
+}
+
+model crawl_progress {
+  id              Int       @id @default(autoincrement())
+  batch_id        String    @unique @db.VarChar(50)
+  batch_type      String?   @default("manual") @db.VarChar(20)
+  total_games     Int       @default(0)
+  processed_games Int?      @default(0)
+  failed_games    Int?      @default(0)
+  success_rate    Decimal?  @default(dbgenerated("\nCASE\n    WHEN (total_games > 0) THEN round((((processed_games)::numeric / (total_games)::numeric) * (100)::numeric), 2)\n    ELSE (0)::numeric\nEND")) @db.Decimal(5, 2)
+  started_at      DateTime? @default(now()) @db.Timestamp(6)
+  completed_at    DateTime? @db.Timestamp(6)
+  error_message   String?
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([batch_id], map: "idx_crawl_progress_batch_id")
+  @@index([started_at], map: "idx_crawl_progress_started_at")
+}
+
+model designers {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.VarChar(255)
+  bgg_url        String?
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  game_designers game_designers[]
+}
+
+model game_artists {
+  game_id   Int
+  artist_id Int
+  artists   artists @relation(fields: [artist_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  games     games   @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([game_id, artist_id])
+  @@index([artist_id], map: "idx_game_artists_artist")
+  @@index([game_id], map: "idx_game_artists_game")
+}
+
+model game_awards {
+  game_id  Int
+  award_id Int
+  awards   awards @relation(fields: [award_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  games    games  @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([game_id, award_id])
+  @@index([award_id], map: "idx_game_awards_award")
+  @@index([game_id], map: "idx_game_awards_game")
+}
+
+model game_best_player_counts {
+  id           Int       @id @default(autoincrement())
+  game_id      Int
+  player_count Int
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  games        games     @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([game_id, player_count])
+  @@index([player_count], map: "idx_best_players_count")
+  @@index([game_id], map: "idx_best_players_game_id")
+}
+
+model game_categories {
+  game_id     Int
+  category_id Int
+  categories  categories @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  games       games      @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([game_id, category_id])
+  @@index([category_id], map: "idx_game_categories_category")
+  @@index([game_id], map: "idx_game_categories_game")
+}
+
+model game_designers {
+  game_id     Int
+  designer_id Int
+  designers   designers @relation(fields: [designer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  games       games     @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([game_id, designer_id])
+  @@index([designer_id], map: "idx_game_designers_designer")
+  @@index([game_id], map: "idx_game_designers_game")
+}
+
+model game_genre_ranks {
+  id            Int       @id @default(autoincrement())
+  game_id       Int
+  genre_id      Int
+  rank_in_genre Int?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  games         games     @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  genres        genres    @relation(fields: [genre_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([game_id, genre_id])
+  @@index([game_id], map: "idx_game_genre_ranks_game")
+  @@index([genre_id], map: "idx_game_genre_ranks_genre")
+  @@index([rank_in_genre], map: "idx_game_genre_ranks_rank")
+}
+
+model game_mechanics {
+  game_id     Int
+  mechanic_id Int
+  games       games     @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  mechanics   mechanics @relation(fields: [mechanic_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([game_id, mechanic_id])
+  @@index([game_id], map: "idx_game_mechanics_game")
+  @@index([mechanic_id], map: "idx_game_mechanics_mechanic")
+}
+
+model game_publishers {
+  game_id      Int
+  publisher_id Int
+  games        games      @relation(fields: [game_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  publishers   publishers @relation(fields: [publisher_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([game_id, publisher_id])
+  @@index([game_id], map: "idx_game_publishers_game")
+  @@index([publisher_id], map: "idx_game_publishers_publisher")
+}
+
+model games {
+  id                      Int                       @id @default(autoincrement())
+  bgg_id                  Int                       @unique
+  primary_name            String                    @db.VarChar(255)
+  japanese_name           String?                   @db.VarChar(255)
+  year_released           Int?
+  image_url               String?
+  avg_rating              Decimal?                  @db.Decimal(4, 2)
+  ratings_count           Int?
+  comments_count          Int?
+  min_players             Int?
+  max_players             Int?
+  min_playtime            Int?
+  max_playtime            Int?
+  min_age                 Int?
+  weight                  Decimal?                  @db.Decimal(4, 2)
+  rank_overall            Int?
+  created_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  game_artists            game_artists[]
+  game_awards             game_awards[]
+  game_best_player_counts game_best_player_counts[]
+  game_categories         game_categories[]
+  game_designers          game_designers[]
+  game_genre_ranks        game_genre_ranks[]
+  game_mechanics          game_mechanics[]
+  game_publishers         game_publishers[]
+
+  @@index([bgg_id], map: "idx_games_bgg_id")
+  @@index([primary_name], map: "idx_games_name")
+  @@index([min_players, max_players], map: "idx_games_players")
+  @@index([rank_overall], map: "idx_games_rank")
+  @@index([avg_rating], map: "idx_games_rating")
+}
+
+model genres {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique @db.VarChar(100)
+  bgg_url          String?
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  game_genre_ranks game_genre_ranks[]
+}
+
+model mechanics {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique @db.VarChar(255)
+  bgg_url        String?
+  created_at     DateTime?        @default(now()) @db.Timestamp(6)
+  game_mechanics game_mechanics[]
+}
+
+model publishers {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique @db.VarChar(255)
+  bgg_url         String?
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  game_publishers game_publishers[]
+}
+
+model target_games {
+  bgg_id     Int       @id
+  memo       String?   @db.VarChar(500)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+}

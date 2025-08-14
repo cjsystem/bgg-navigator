@@ -1,103 +1,237 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import {GameSearchResponse, GameSearchResult} from "@/app/lib/gameService";
+import DesignerAutoComplete from "@/app/components/DesignerAutoComplete";
+
+export default function GameSearch() {
+  const [searchResults, setSearchResults] = useState<GameSearchResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useState({
+    name: '',
+    playerCount: '',
+    minRating: '',
+    yearMin: '',
+    yearMax: '',
+    page: 1,
+    limit: 10
+  });
+  const [selectedDesigners, setSelectedDesigners] = useState<string[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams();
+
+      if (searchParams.name) queryParams.append('name', searchParams.name);
+      if (searchParams.playerCount) queryParams.append('playerCount', searchParams.playerCount);
+      if (searchParams.minRating) queryParams.append('minRating', searchParams.minRating);
+      if (searchParams.yearMin) queryParams.append('yearMin', searchParams.yearMin);
+      if (searchParams.yearMax) queryParams.append('yearMax', searchParams.yearMax);
+
+      // デザイナー名をカンマ区切りで追加
+      if (selectedDesigners.length > 0) {
+        queryParams.append('designers', selectedDesigners.join(','));
+      }
+
+      queryParams.append('page', searchParams.page.toString());
+      queryParams.append('limit', searchParams.limit.toString());
+
+      const response = await fetch(`/api/games/search?${queryParams}`);
+      const data: GameSearchResponse = await response.json();
+
+      setSearchResults(data);
+      setHasSearched(true);
+    } catch (error) {
+      console.error('検索エラー:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (hasSearched) {
+      handleSearch();
+    }
+  }, [searchParams.page]);
+
+  const handleInitialSearch = () => {
+    setSearchParams({ ...searchParams, page: 1 });
+    handleSearch();
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">ボードゲーム検索</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        {/* 検索フォーム */}
+        <div className="mb-6 grid grid-cols-1 gap-4">
+          {/* 1行目 */}
+          <div className="grid grid-cols-2 gap-4">
+            <input
+                type="text"
+                placeholder="ゲーム名"
+                value={searchParams.name}
+                onChange={(e) => setSearchParams({ ...searchParams, name: e.target.value })}
+                className="border p-2 rounded"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs hogemogefuga
-          </a>
+
+            <input
+                type="number"
+                placeholder="プレイヤー数"
+                value={searchParams.playerCount}
+                onChange={(e) => setSearchParams({ ...searchParams, playerCount: e.target.value })}
+                className="border p-2 rounded"
+            />
+          </div>
+
+          {/* 2行目 */}
+          <div className="grid grid-cols-2 gap-4">
+            <input
+                type="number"
+                placeholder="最低評価"
+                step="0.1"
+                value={searchParams.minRating}
+                onChange={(e) => setSearchParams({ ...searchParams, minRating: e.target.value })}
+                className="border p-2 rounded"
+            />
+
+            {/* デザイナー検索（オートコンプリート） */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                デザイナー
+              </label>
+              <DesignerAutoComplete
+                  selectedDesigners={selectedDesigners}
+                  onDesignersChange={setSelectedDesigners}
+              />
+            </div>
+          </div>
+
+          {/* 3行目 */}
+          <div className="grid grid-cols-2 gap-4">
+            <input
+                type="number"
+                placeholder="発売年（開始）"
+                value={searchParams.yearMin}
+                onChange={(e) => setSearchParams({ ...searchParams, yearMin: e.target.value })}
+                className="border p-2 rounded"
+            />
+
+            <input
+                type="number"
+                placeholder="発売年（終了）"
+                value={searchParams.yearMax}
+                onChange={(e) => setSearchParams({ ...searchParams, yearMax: e.target.value })}
+                className="border p-2 rounded"
+            />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+
+        <button
+            onClick={handleInitialSearch}
+            disabled={loading}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {loading ? '検索中...' : '検索'}
+        </button>
+
+        {/* 検索結果 */}
+        {searchResults && (
+            <div className="mt-6">
+              <div className="mb-4">
+                <p className="text-gray-600">
+                  {searchResults.totalCount}件中 {((searchResults.currentPage - 1) * searchParams.limit + 1)} - {Math.min(searchResults.currentPage * searchParams.limit, searchResults.totalCount)}件を表示
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {searchResults.games.map((game) => (
+                    <GameCard key={game.id} game={game} />
+                ))}
+              </div>
+
+              {/* ページング */}
+              <div className="mt-6 flex justify-center space-x-2">
+                <button
+                    onClick={() => setSearchParams({ ...searchParams, page: searchParams.page - 1 })}
+                    disabled={!searchResults.hasPreviousPage || loading}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  前へ
+                </button>
+
+                <span className="px-3 py-1">
+                  {searchResults.currentPage} / {searchResults.totalPages}
+                </span>
+
+                <button
+                    onClick={() => setSearchParams({ ...searchParams, page: searchResults.currentPage + 1 })}
+                    disabled={!searchResults.hasNextPage || loading}
+                    className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  {loading ? '読込中...' : '次へ'}
+                </button>
+              </div>
+            </div>
+        )}
+      </div>
+  );
+}
+
+// ゲームカードコンポーネント（変更なし）
+function GameCard({ game }: { game: GameSearchResult }) {
+  return (
+      <div className="border rounded-lg p-4 shadow-sm">
+        <div className="flex items-start space-x-4">
+          {game.imageUrl && (
+              <img
+                  src={game.imageUrl}
+                  alt={game.primaryName}
+                  className="w-20 h-20 object-cover rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+              />
+          )}
+
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold">
+              {game.primaryName}
+              {game.japaneseName && (
+                  <span className="text-sm text-gray-600 ml-2">({game.japaneseName})</span>
+              )}
+            </h3>
+
+            <div className="text-sm text-gray-600 mt-1">
+              {game.yearReleased && <span>発売年: {game.yearReleased} | </span>}
+              {game.minPlayers && game.maxPlayers && (
+                  <span>プレイヤー数: {game.minPlayers}-{game.maxPlayers}人 | </span>
+              )}
+              {game.avgRating && <span>評価: {game.avgRating}/10 | </span>}
+              {game.rankOverall && <span>ランキング: {game.rankOverall}位</span>}
+            </div>
+
+            {game.designers.length > 0 && (
+                <div className="text-sm mt-2">
+                  <strong>デザイナー:</strong> {game.designers.map(d => d.name).join(', ')}
+                </div>
+            )}
+
+            {game.mechanics.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>メカニクス:</strong> {game.mechanics.map(m => m.name).join(', ')}
+                </div>
+            )}
+
+            {game.bestPlayerCounts.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>ベストプレイヤー数:</strong> {game.bestPlayerCounts.join(', ')}人
+                </div>
+            )}
+          </div>
+        </div>
+      </div>
   );
 }
