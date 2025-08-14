@@ -79,6 +79,11 @@ export async function GET(request: NextRequest) {
       filters.awardNames = searchParams.get('awards')!.split(',');
     }
 
+    // ジャンル名
+    if (searchParams.get('genre')) {
+      filters.genreName = searchParams.get('genre')!;
+    }
+
     // ページング
     if (searchParams.get('page')) {
       filters.page = parseInt(searchParams.get('page')!);

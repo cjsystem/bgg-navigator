@@ -1,12 +1,13 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import {GameSearchResponse, GameSearchResult} from "@/app/lib/gameService";
-import DesignerAutoComplete from "@/app/components/DesignerAutoComplete";
-import PublisherAutocomplete from "@/app/components/PublisherAutoComplete";
-import ArtistAutoComplete from "@/app/components/ArtistAutoComplete";
-import PublisherAutoComplete from "@/app/components/PublisherAutoComplete";
+import DesignerAutoComplete from './components/DesignerAutoComplete';
+import ArtistAutoComplete from "./components/ArtistAutoComplete";
+import PublisherAutoComplete from "./components/PublisherAutoComplete";
+import MechanicSelect from "./components/MechanicSelect";
+import CategorySelect from "./components/CategorySelect";
+import GenreSelect from "./components/GenreSelect";
 
 export default function GameSearch() {
   const [searchResults, setSearchResults] = useState<GameSearchResponse | null>(null);
@@ -23,6 +24,9 @@ export default function GameSearch() {
   const [selectedDesigners, setSelectedDesigners] = useState<string[]>([]);
   const [selectedArtists, setSelectedArtists] = useState<string[]>([]);
   const [selectedPublishers, setSelectedPublishers] = useState<string[]>([]);
+  const [selectedMechanics, setSelectedMechanics] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedGenre, setSelectedGenre] = useState<string>('');
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async () => {
@@ -49,6 +53,21 @@ export default function GameSearch() {
       // パブリッシャー名をカンマ区切りで追加
       if (selectedPublishers.length > 0) {
         queryParams.append('publishers', selectedPublishers.join(','));
+      }
+
+      // メカニクス名をカンマ区切りで追加
+      if (selectedMechanics.length > 0) {
+        queryParams.append('mechanics', selectedMechanics.join(','));
+      }
+
+      // カテゴリ名をカンマ区切りで追加
+      if (selectedCategories.length > 0) {
+        queryParams.append('categories', selectedCategories.join(','));
+      }
+
+      // ジャンル名を追加
+      if (selectedGenre) {
+        queryParams.append('genre', selectedGenre);
       }
 
       queryParams.append('page', searchParams.page.toString());
@@ -132,7 +151,18 @@ export default function GameSearch() {
             </div>
           </div>
 
-          {/* 3行目: デザイナー検索 */}
+          {/* 3行目: ジャンル選択 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              ジャンル
+            </label>
+            <GenreSelect
+                selectedGenre={selectedGenre}
+                onGenreChange={setSelectedGenre}
+            />
+          </div>
+
+          {/* 4行目: デザイナー検索 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               デザイナー
@@ -143,7 +173,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 4行目: アーティスト検索 */}
+          {/* 5行目: アーティスト検索 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               アーティスト
@@ -154,7 +184,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 5行目: パブリッシャー検索 */}
+          {/* 6行目: パブリッシャー検索 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               パブリッシャー
@@ -162,6 +192,28 @@ export default function GameSearch() {
             <PublisherAutoComplete
                 selectedPublishers={selectedPublishers}
                 onPublishersChange={setSelectedPublishers}
+            />
+          </div>
+
+          {/* 7行目: メカニクス選択 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              メカニクス
+            </label>
+            <MechanicSelect
+                selectedMechanics={selectedMechanics}
+                onMechanicsChange={setSelectedMechanics}
+            />
+          </div>
+
+          {/* 8行目: カテゴリ選択 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              カテゴリ
+            </label>
+            <CategorySelect
+                selectedCategories={selectedCategories}
+                onCategoriesChange={setSelectedCategories}
             />
           </div>
         </div>
@@ -217,7 +269,7 @@ export default function GameSearch() {
   );
 }
 
-// ゲームカードコンポーネント
+// ゲームカードコンポーネント（変更なし）
 function GameCard({ game }: { game: GameSearchResult }) {
   return (
       <div className="border rounded-lg p-4 shadow-sm">
@@ -271,6 +323,18 @@ function GameCard({ game }: { game: GameSearchResult }) {
             {game.mechanics.length > 0 && (
                 <div className="text-sm mt-1">
                   <strong>メカニクス:</strong> {game.mechanics.map(m => m.name).join(', ')}
+                </div>
+            )}
+
+            {game.categories.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>カテゴリ:</strong> {game.categories.map(c => c.name).join(', ')}
+                </div>
+            )}
+
+            {game.genreRankings.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>ジャンル別ランキング:</strong> {game.genreRankings.map(gr => `${gr.genre.name}:${gr.rankInGenre}位`).join(', ')}
                 </div>
             )}
 

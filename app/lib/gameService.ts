@@ -29,6 +29,7 @@ export interface GameSearchFilters {
   mechanicNames?: string[];         // メカニクス名
   categoryNames?: string[];         // カテゴリ名
   awardNames?: string[];            // 受賞歴
+  genreName?: string;             // ジャンル名（単一選択）
 
   // ページング
   page?: number;
@@ -131,6 +132,7 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     mechanicNames,
     categoryNames,
     awardNames,
+    genreName,
     page = 1,
     limit = 20
   } = filters;
@@ -282,6 +284,19 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
             award_name: {
               in: awardNames
             }
+          }
+        }
+      }
+    });
+  }
+
+  // ジャンル検索
+  if (genreName) {
+    whereConditions.AND.push({
+      game_genre_ranks: {
+        some: {
+          genres: {
+            name: genreName
           }
         }
       }
