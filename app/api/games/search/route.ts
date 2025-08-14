@@ -84,6 +84,17 @@ export async function GET(request: NextRequest) {
       filters.genreName = searchParams.get('genre')!;
     }
 
+    // 賞検索
+    if (searchParams.get('awardYear')) {
+      filters.awardYear = parseInt(searchParams.get('awardYear')!);
+    }
+    if (searchParams.get('awardName')) {
+      filters.awardName = searchParams.get('awardName')!;
+    }
+    if (searchParams.get('awardType')) {
+      filters.awardType = searchParams.get('awardType')!;
+    }
+
     // ページング
     if (searchParams.get('page')) {
       filters.page = parseInt(searchParams.get('page')!);

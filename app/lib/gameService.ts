@@ -30,6 +30,9 @@ export interface GameSearchFilters {
   categoryNames?: string[];         // カテゴリ名
   awardNames?: string[];            // 受賞歴
   genreName?: string;             // ジャンル名（単一選択）
+  awardYear?: number;
+  awardName?: string;
+  awardType?: string;
 
   // ページング
   page?: number;
@@ -133,6 +136,9 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     categoryNames,
     awardNames,
     genreName,
+    awardYear,
+    awardName,
+    awardType,
     page = 1,
     limit = 20
   } = filters;
@@ -303,7 +309,34 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     });
   }
 
-  // ANDが空の場合は削除
+  // 賞検索
+  if (awardYear || awardName || awardType) {
+    const awardConditions: any = {};
+
+    if (awardYear) {
+      awardConditions.award_year = awardYear;
+    }
+    if (awardName) {
+      awardConditions.award_name = {
+        contains: awardName,
+        mode: 'insensitive'
+      };
+    }
+    if (awardType) {
+      awardConditions.award_type = awardType;
+    }
+
+    whereConditions.AND.push({
+      game_awards: {
+        some: {
+          awards: awardConditions
+        }
+      }
+    });
+  }
+
+
+    // ANDが空の場合は削除
   if (whereConditions.AND.length === 0) {
     delete whereConditions.AND;
   }

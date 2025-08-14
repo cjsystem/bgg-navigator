@@ -8,6 +8,7 @@ import PublisherAutoComplete from "./components/PublisherAutoComplete";
 import MechanicSelect from "./components/MechanicSelect";
 import CategorySelect from "./components/CategorySelect";
 import GenreSelect from "./components/GenreSelect";
+import AwardSearch from "./components/AwardSearch";
 
 export default function GameSearch() {
   const [searchResults, setSearchResults] = useState<GameSearchResponse | null>(null);
@@ -15,6 +16,7 @@ export default function GameSearch() {
   const [searchParams, setSearchParams] = useState({
     name: '',
     playerCount: '',
+    bestPlayerCount: '',              // ベストプレイヤー数を追加
     minRating: '',
     yearMin: '',
     yearMax: '',
@@ -27,6 +29,12 @@ export default function GameSearch() {
   const [selectedMechanics, setSelectedMechanics] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<string>('');
+
+  // 賞検索用の状態
+  const [awardYear, setAwardYear] = useState<string>('');
+  const [awardName, setAwardName] = useState<string>('');
+  const [awardType, setAwardType] = useState<string>('');
+
   const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async () => {
@@ -36,6 +44,7 @@ export default function GameSearch() {
 
       if (searchParams.name) queryParams.append('name', searchParams.name);
       if (searchParams.playerCount) queryParams.append('playerCount', searchParams.playerCount);
+      if (searchParams.bestPlayerCount) queryParams.append('bestPlayerCount', searchParams.bestPlayerCount); // 追加
       if (searchParams.minRating) queryParams.append('minRating', searchParams.minRating);
       if (searchParams.yearMin) queryParams.append('yearMin', searchParams.yearMin);
       if (searchParams.yearMax) queryParams.append('yearMax', searchParams.yearMax);
@@ -70,6 +79,11 @@ export default function GameSearch() {
         queryParams.append('genre', selectedGenre);
       }
 
+      // 賞情報を追加
+      if (awardYear) queryParams.append('awardYear', awardYear);
+      if (awardName) queryParams.append('awardName', awardName);
+      if (awardType) queryParams.append('awardType', awardType);
+
       queryParams.append('page', searchParams.page.toString());
       queryParams.append('limit', searchParams.limit.toString());
 
@@ -103,7 +117,7 @@ export default function GameSearch() {
         {/* 検索フォーム */}
         <div className="mb-6 grid grid-cols-1 gap-4">
           {/* 1行目 */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <input
                 type="text"
                 placeholder="ゲーム名"
@@ -118,6 +132,18 @@ export default function GameSearch() {
                 value={searchParams.playerCount}
                 onChange={(e) => setSearchParams({ ...searchParams, playerCount: e.target.value })}
                 className="border p-2 rounded"
+                min="1"
+                max="20"
+            />
+
+            <input
+                type="number"
+                placeholder="ベストプレイヤー数"
+                value={searchParams.bestPlayerCount}
+                onChange={(e) => setSearchParams({ ...searchParams, bestPlayerCount: e.target.value })}
+                className="border p-2 rounded"
+                min="1"
+                max="20"
             />
           </div>
 
@@ -162,7 +188,22 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 4行目: デザイナー検索 */}
+          {/* 4行目: 賞検索 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              受賞歴
+            </label>
+            <AwardSearch
+                awardYear={awardYear}
+                awardName={awardName}
+                awardType={awardType}
+                onAwardYearChange={setAwardYear}
+                onAwardNameChange={setAwardName}
+                onAwardTypeChange={setAwardType}
+            />
+          </div>
+
+          {/* 5行目: デザイナー検索 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               デザイナー
@@ -173,7 +214,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 5行目: アーティスト検索 */}
+          {/* 6行目: アーティスト検索 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               アーティスト
@@ -184,7 +225,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 6行目: パブリッシャー検索 */}
+          {/* 7行目: パブリッシャー検索 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               パブリッシャー
@@ -195,7 +236,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 7行目: メカニクス選択 */}
+          {/* 8行目: メカニクス選択 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               メカニクス
@@ -206,7 +247,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 8行目: カテゴリ選択 */}
+          {/* 9行目: カテゴリ選択 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               カテゴリ
@@ -225,6 +266,12 @@ export default function GameSearch() {
         >
           {loading ? '検索中...' : '検索'}
         </button>
+
+        {/* 検索条件の説明 */}
+        <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-700">
+          <p><strong>プレイヤー数</strong>：指定した人数でプレイ可能なゲーム</p>
+          <p><strong>ベストプレイヤー数</strong>：指定した人数が最適なプレイヤー数として推奨されているゲーム</p>
+        </div>
 
         {/* 検索結果 */}
         {searchResults && (
@@ -335,6 +382,12 @@ function GameCard({ game }: { game: GameSearchResult }) {
             {game.genreRankings.length > 0 && (
                 <div className="text-sm mt-1">
                   <strong>ジャンル別ランキング:</strong> {game.genreRankings.map(gr => `${gr.genre.name}:${gr.rankInGenre}位`).join(', ')}
+                </div>
+            )}
+
+            {game.awards.length > 0 && (
+                <div className="text-sm mt-1">
+                  <strong>受賞歴:</strong> {game.awards.map(a => `${a.awardName} (${a.awardYear}) - ${a.awardType}`).join('; ')}
                 </div>
             )}
 
