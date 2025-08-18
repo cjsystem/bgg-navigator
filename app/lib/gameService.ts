@@ -4,52 +4,37 @@ const prisma = new PrismaClient();
 
 // ゲーム検索のためのフィルタ型定義
 export interface GameSearchFilters {
-  // 基本検索
-  name?: string;                    // ゲーム名（英語・日本語両方を検索）
-  yearReleased?: {
-    min?: number;
-    max?: number;
-  };
-
-  // プレイヤー数・プレイ時間
-  playerCount?: number;             // この人数でプレイ可能なゲーム
-  bestPlayerCount?: number;         // ベストプレイヤー数
+  name?: string;
+  yearReleased?: { min?: number; max?: number };
+  playerCount?: number;
+  bestPlayerCount?: number;
   minPlaytime?: number;
   maxPlaytime?: number;
   minAge?: number;
-
-  // 評価・ランキング
   minRating?: number;
-  maxRank?: number;                 // 総合ランキング上位X位まで
-
-  // 関連エンティティでの検索
-  designerNames?: string[];         // デザイナー名
-  artistNames?: string[];           // アーティスト名
-  publisherNames?: string[];        // パブリッシャー名
-  mechanicNames?: string[];         // メカニクス名
-  categoryNames?: string[];         // カテゴリ名
-  awardNames?: string[];            // 受賞歴
-  genreName?: string;             // ジャンル名（単一選択）
+  maxRank?: number;
+  designerNames?: string[];
+  artistNames?: string[];
+  publisherNames?: string[];
+  mechanicNames?: string[];
+  categoryNames?: string[];
+  awardNames?: string[];
+  genreName?: string;
   awardYear?: number;
   awardName?: string;
   awardType?: string;
-
   weightMin?: number;
   weightMax?: number;
   ratingsCountMin?: number;
   ratingsCountMax?: number;
   commentsCountMin?: number;
   commentsCountMax?: number;
-
-
-  // ページング
   page?: number;
   limit?: number;
 }
 
-// 検索結果の型定義
+// 検索結果の型定義（awards に bggUrl を追加）
 export interface GameSearchResult {
-  // 基本情報
   id: number;
   bggId: number;
   primaryName: string;
@@ -57,12 +42,10 @@ export interface GameSearchResult {
   yearReleased: number | null;
   imageUrl: string | null;
 
-  // 評価情報
   avgRating: number | null;
   ratingsCount: number | null;
   commentsCount: number | null;
 
-  // プレイ情報
   minPlayers: number | null;
   maxPlayers: number | null;
   minPlaytime: number | null;
@@ -71,61 +54,30 @@ export interface GameSearchResult {
   weight: number | null;
   rankOverall: number | null;
 
-  // 関連情報
-  designers: Array<{
-    id: number;
-    name: string;
-  }>;
-  artists: Array<{
-    id: number;
-    name: string;
-  }>;
-  publishers: Array<{
-    id: number;
-    name: string;
-  }>;
-  mechanics: Array<{
-    id: number;
-    name: string;
-  }>;
-  categories: Array<{
-    id: number;
-    name: string;
-  }>;
+  designers: Array<{ id: number; name: string; bggUrl?: string | null }>;
+  artists: Array<{ id: number; name: string; bggUrl?: string | null }>;
+  publishers: Array<{ id: number; name: string; bggUrl?: string | null }>;
+  mechanics: Array<{ id: number; name: string; bggUrl?: string | null }>;
+  categories: Array<{ id: number; name: string; bggUrl?: string | null }>;
   awards: Array<{
     id: number;
     awardName: string;
     awardYear: number;
     awardType: string;
     awardCategory: string | null;
+    bggUrl: string | null; // ← 追加
   }>;
   genreRankings: Array<{
-    genre: {
-      id: number;
-      name: string;
-    };
+    genre: { id: number; name: string; bggUrl?: string | null };
     rankInGenre: number | null;
   }>;
   bestPlayerCounts: number[];
 
-  // メタデータ
   createdAt: Date | null;
   updatedAt: Date | null;
 }
 
-// 検索結果のページング情報
-export interface GameSearchResponse {
-  games: GameSearchResult[];
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-/**
- * ゲームを包括的に検索する関数
- */
+// 検索処理
 export async function searchGames(filters: GameSearchFilters = {}): Promise<GameSearchResponse> {
   const {
     name,
@@ -157,12 +109,7 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     limit = 20
   } = filters;
 
-  // WHERE条件を構築
-  const whereConditions: any = {
-    AND: []
-  };
-
-  // 名前検索（英語・日本語両方）
+  const whereConditions: any = { AND: [] };
   if (name) {
     whereConditions.AND.push({
       OR: [
@@ -171,282 +118,85 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
       ]
     });
   }
-
-  // 年代検索
   if (yearReleased) {
-    const yearConditions: any = {};
-    if (yearReleased.min) yearConditions.gte = yearReleased.min;
-    if (yearReleased.max) yearConditions.lte = yearReleased.max;
-    if (Object.keys(yearConditions).length > 0) {
-      whereConditions.AND.push({ year_released: yearConditions });
-    }
+    const yearCond: any = {};
+    if (yearReleased.min) yearCond.gte = yearReleased.min;
+    if (yearReleased.max) yearCond.lte = yearReleased.max;
+    if (Object.keys(yearCond).length) whereConditions.AND.push({ year_released: yearCond });
   }
-
-  // プレイヤー数検索（指定した人数でプレイ可能）
   if (playerCount) {
     whereConditions.AND.push({
-      AND: [
-        { min_players: { lte: playerCount } },
-        { max_players: { gte: playerCount } }
-      ]
+      AND: [{ min_players: { lte: playerCount } }, { max_players: { gte: playerCount } }]
     });
   }
+  if (minPlaytime) whereConditions.AND.push({ min_playtime: { gte: minPlaytime } });
+  if (maxPlaytime) whereConditions.AND.push({ max_playtime: { lte: maxPlaytime } });
+  if (minAge) whereConditions.AND.push({ min_age: { gte: minAge } });
+  if (minRating) whereConditions.AND.push({ avg_rating: { gte: minRating } });
+  if (maxRank) whereConditions.AND.push({ rank_overall: { lte: maxRank } });
 
-  // プレイ時間、年齢、評価、ランキング
-  if (minPlaytime) {
-    whereConditions.AND.push({ min_playtime: { gte: minPlaytime } });
-  }
-  if (maxPlaytime) {
-    whereConditions.AND.push({ max_playtime: { lte: maxPlaytime } });
-  }
-  if (minAge) {
-    whereConditions.AND.push({ min_age: { gte: minAge } });
-  }
-  if (minRating) {
-    whereConditions.AND.push({ avg_rating: { gte: minRating } });
-  }
-  if (maxRank) {
-    whereConditions.AND.push({ rank_overall: { lte: maxRank } });
-  }
-
-  // ベストプレイヤー数
   if (bestPlayerCount) {
-    whereConditions.AND.push({
-      game_best_player_counts: {
-        some: {
-          player_count: bestPlayerCount
-        }
-      }
-    });
+    whereConditions.AND.push({ game_best_player_counts: { some: { player_count: bestPlayerCount } } });
   }
-
-  // デザイナー名検索
-  if (designerNames && designerNames.length > 0) {
-    whereConditions.AND.push({
-      game_designers: {
-        some: {
-          designers: {
-            name: {
-              in: designerNames
-            }
-          }
-        }
-      }
-    });
+  if (designerNames?.length) {
+    whereConditions.AND.push({ game_designers: { some: { designers: { name: { in: designerNames } } } } });
   }
-
-  // アーティスト名検索
-  if (artistNames && artistNames.length > 0) {
-    whereConditions.AND.push({
-      game_artists: {
-        some: {
-          artists: {
-            name: {
-              in: artistNames
-            }
-          }
-        }
-      }
-    });
+  if (artistNames?.length) {
+    whereConditions.AND.push({ game_artists: { some: { artists: { name: { in: artistNames } } } } });
   }
-
-  // パブリッシャー名検索
-  if (publisherNames && publisherNames.length > 0) {
-    whereConditions.AND.push({
-      game_publishers: {
-        some: {
-          publishers: {
-            name: {
-              in: publisherNames
-            }
-          }
-        }
-      }
-    });
+  if (publisherNames?.length) {
+    whereConditions.AND.push({ game_publishers: { some: { publishers: { name: { in: publisherNames } } } } });
   }
-
-  // メカニクス名検索
-  if (mechanicNames && mechanicNames.length > 0) {
-    whereConditions.AND.push({
-      game_mechanics: {
-        some: {
-          mechanics: {
-            name: {
-              in: mechanicNames
-            }
-          }
-        }
-      }
-    });
+  if (mechanicNames?.length) {
+    whereConditions.AND.push({ game_mechanics: { some: { mechanics: { name: { in: mechanicNames } } } } });
   }
-
-  // カテゴリ名検索
-  if (categoryNames && categoryNames.length > 0) {
-    whereConditions.AND.push({
-      game_categories: {
-        some: {
-          categories: {
-            name: {
-              in: categoryNames
-            }
-          }
-        }
-      }
-    });
+  if (categoryNames?.length) {
+    whereConditions.AND.push({ game_categories: { some: { categories: { name: { in: categoryNames } } } } });
   }
-
-  // 受賞歴検索
-  if (awardNames && awardNames.length > 0) {
-    whereConditions.AND.push({
-      game_awards: {
-        some: {
-          awards: {
-            award_name: {
-              in: awardNames
-            }
-          }
-        }
-      }
-    });
+  if (awardNames?.length) {
+    whereConditions.AND.push({ game_awards: { some: { awards: { award_name: { in: awardNames } } } } });
   }
-
-  // ジャンル検索
   if (genreName) {
-    whereConditions.AND.push({
-      game_genre_ranks: {
-        some: {
-          genres: {
-            name: genreName
-          }
-        }
-      }
-    });
+    whereConditions.AND.push({ game_genre_ranks: { some: { genres: { name: genreName } } } });
   }
-
-  // 賞検索
   if (awardYear || awardName || awardType) {
-    const awardConditions: any = {};
-
-    if (awardYear) {
-      awardConditions.award_year = awardYear;
-    }
-    if (awardName) {
-      awardConditions.award_name = {
-        contains: awardName,
-        mode: 'insensitive'
-      };
-    }
-    if (awardType) {
-      awardConditions.award_type = awardType;
-    }
-
-    whereConditions.AND.push({
-      game_awards: {
-        some: {
-          awards: awardConditions
-        }
-      }
-    });
+    const awardCond: any = {};
+    if (awardYear) awardCond.award_year = awardYear;
+    if (awardName) awardCond.award_name = { contains: awardName, mode: 'insensitive' };
+    if (awardType) awardCond.award_type = awardType;
+    whereConditions.AND.push({ game_awards: { some: { awards: awardCond } } });
   }
+  if (weightMin !== undefined) whereConditions.AND.push({ weight: { gte: weightMin } });
+  if (weightMax !== undefined) whereConditions.AND.push({ weight: { lte: weightMax } });
+  if (ratingsCountMin !== undefined) whereConditions.AND.push({ ratings_count: { gte: ratingsCountMin } });
+  if (ratingsCountMax !== undefined) whereConditions.AND.push({ ratings_count: { lte: ratingsCountMax } });
+  if (commentsCountMin !== undefined) whereConditions.AND.push({ comments_count: { gte: commentsCountMin } });
+  if (commentsCountMax !== undefined) whereConditions.AND.push({ comments_count: { lte: commentsCountMax } });
 
-  // 重さ（weight）
-  if (weightMin !== undefined) {
-    whereConditions.AND.push({ weight: { gte: weightMin } });
-  }
-  if (weightMax !== undefined) {
-    whereConditions.AND.push({ weight: { lte: weightMax } });
-  }
+  if (!whereConditions.AND.length) delete whereConditions.AND;
 
-  // 投票数（ratings_count）
-  if (ratingsCountMin !== undefined) {
-    whereConditions.AND.push({ ratings_count: { gte: ratingsCountMin } });
-  }
-  if (ratingsCountMax !== undefined) {
-    whereConditions.AND.push({ ratings_count: { lte: ratingsCountMax } });
-  }
-
-  // 口コミ数（comments_count）
-  if (commentsCountMin !== undefined) {
-    whereConditions.AND.push({ comments_count: { gte: commentsCountMin } });
-  }
-  if (commentsCountMax !== undefined) {
-    whereConditions.AND.push({ comments_count: { lte: commentsCountMax } });
-  }
-
-  // ANDが空の場合は削除
-  if (whereConditions.AND.length === 0) {
-    delete whereConditions.AND;
-  }
-
-  // 総件数を取得
-  const totalCount = await prisma.games.count({
-    where: whereConditions
-  });
-
-  // ページング計算
+  const totalCount = await prisma.games.count({ where: whereConditions });
   const skip = (page - 1) * limit;
   const totalPages = Math.ceil(totalCount / limit);
 
-  // ゲーム検索実行（全関連データを含む）
   const games = await prisma.games.findMany({
     where: whereConditions,
     include: {
-      // デザイナー
       game_designers: {
-        include: {
-          designers: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        include: { designers: { select: { id: true, name: true, bgg_url: true } } }
       },
-      // アーティスト
       game_artists: {
-        include: {
-          artists: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        include: { artists: { select: { id: true, name: true, bgg_url: true } } }
       },
-      // パブリッシャー
       game_publishers: {
-        include: {
-          publishers: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        include: { publishers: { select: { id: true, name: true, bgg_url: true } } }
       },
-      // メカニクス
       game_mechanics: {
-        include: {
-          mechanics: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        include: { mechanics: { select: { id: true, name: true, bgg_url: true } } }
       },
-      // カテゴリ
       game_categories: {
-        include: {
-          categories: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        include: { categories: { select: { id: true, name: true, bgg_url: true } } }
       },
-      // 受賞歴
       game_awards: {
         include: {
           awards: {
@@ -455,43 +205,26 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
               award_name: true,
               award_year: true,
               award_type: true,
-              award_category: true
+              award_category: true,
+              bgg_url: true // ← 追加
             }
           }
         }
       },
-      // ジャンルランキング
       game_genre_ranks: {
-        include: {
-          genres: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        include: { genres: { select: { id: true, name: true, bgg_url: true } } }
       },
-      // ベストプレイヤー数
       game_best_player_counts: {
-        select: {
-          player_count: true
-        },
-        orderBy: {
-          player_count: 'asc'
-        }
+        select: { player_count: true },
+        orderBy: { player_count: 'asc' }
       }
     },
-    orderBy: [
-      { rank_overall: 'asc' },
-      { avg_rating: 'desc' },
-      { primary_name: 'asc' }
-    ],
+    orderBy: [{ rank_overall: 'asc' }, { avg_rating: 'desc' }, { primary_name: 'asc' }],
     skip,
     take: limit
   });
 
-  // 結果を整形
-  const gameResults: GameSearchResult[] = games.map(game => ({
+  const gameResults: GameSearchResult[] = games.map((game) => ({
     id: game.id,
     bggId: game.bgg_id,
     primaryName: game.primary_name,
@@ -508,41 +241,49 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     minAge: game.min_age,
     weight: game.weight ? Number(game.weight) : null,
     rankOverall: game.rank_overall,
-    designers: game.game_designers.map(gd => ({
+
+    designers: game.game_designers.map((gd) => ({
       id: gd.designers.id,
-      name: gd.designers.name
+      name: gd.designers.name,
+      bggUrl: gd.designers.bgg_url ?? null
     })),
-    artists: game.game_artists.map(ga => ({
+    artists: game.game_artists.map((ga) => ({
       id: ga.artists.id,
-      name: ga.artists.name
+      name: ga.artists.name,
+      bggUrl: ga.artists.bgg_url ?? null
     })),
-    publishers: game.game_publishers.map(gp => ({
+    publishers: game.game_publishers.map((gp) => ({
       id: gp.publishers.id,
-      name: gp.publishers.name
+      name: gp.publishers.name,
+      bggUrl: gp.publishers.bgg_url ?? null
     })),
-    mechanics: game.game_mechanics.map(gm => ({
+    mechanics: game.game_mechanics.map((gm) => ({
       id: gm.mechanics.id,
-      name: gm.mechanics.name
+      name: gm.mechanics.name,
+      bggUrl: gm.mechanics.bgg_url ?? null
     })),
-    categories: game.game_categories.map(gc => ({
+    categories: game.game_categories.map((gc) => ({
       id: gc.categories.id,
-      name: gc.categories.name
+      name: gc.categories.name,
+      bggUrl: gc.categories.bgg_url ?? null
     })),
-    awards: game.game_awards.map(ga => ({
+    awards: game.game_awards.map((ga) => ({
       id: ga.awards.id,
       awardName: ga.awards.award_name,
       awardYear: ga.awards.award_year,
       awardType: ga.awards.award_type,
-      awardCategory: ga.awards.award_category
+      awardCategory: ga.awards.award_category,
+      bggUrl: ga.awards.bgg_url ?? null // ← 追加
     })),
-    genreRankings: game.game_genre_ranks.map(ggr => ({
+    genreRankings: game.game_genre_ranks.map((ggr) => ({
       genre: {
         id: ggr.genres.id,
-        name: ggr.genres.name
+        name: ggr.genres.name,
+        bggUrl: ggr.genres.bgg_url ?? null
       },
       rankInGenre: ggr.rank_in_genre
     })),
-    bestPlayerCounts: game.game_best_player_counts.map(bpc => bpc.player_count),
+    bestPlayerCounts: game.game_best_player_counts.map((bpc) => bpc.player_count),
     createdAt: game.created_at,
     updatedAt: game.updated_at
   }));
@@ -557,97 +298,27 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
   };
 }
 
-/**
- * 特定IDのゲーム詳細を取得
- */
+// getGameById / getGameByBggId も awards に bgg_url を含めて返却するよう修正
 export async function getGameById(id: number): Promise<GameSearchResult | null> {
   const game = await prisma.games.findUnique({
     where: { id },
     include: {
-      game_designers: {
-        include: {
-          designers: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_artists: {
-        include: {
-          artists: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_publishers: {
-        include: {
-          publishers: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_mechanics: {
-        include: {
-          mechanics: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_categories: {
-        include: {
-          categories: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
+      game_designers: { include: { designers: { select: { id: true, name: true, bgg_url: true } } } },
+      game_artists: { include: { artists: { select: { id: true, name: true, bgg_url: true } } } },
+      game_publishers: { include: { publishers: { select: { id: true, name: true, bgg_url: true } } } },
+      game_mechanics: { include: { mechanics: { select: { id: true, name: true, bgg_url: true } } } },
+      game_categories: { include: { categories: { select: { id: true, name: true, bgg_url: true } } } },
       game_awards: {
         include: {
           awards: {
-            select: {
-              id: true,
-              award_name: true,
-              award_year: true,
-              award_type: true,
-              award_category: true
-            }
+            select: { id: true, award_name: true, award_year: true, award_type: true, award_category: true, bgg_url: true }
           }
         }
       },
-      game_genre_ranks: {
-        include: {
-          genres: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_best_player_counts: {
-        select: {
-          player_count: true
-        },
-        orderBy: {
-          player_count: 'asc'
-        }
-      }
+      game_genre_ranks: { include: { genres: { select: { id: true, name: true, bgg_url: true } } } },
+      game_best_player_counts: { select: { player_count: true }, orderBy: { player_count: 'asc' } }
     }
   });
-
   if (!game) return null;
 
   return {
@@ -667,137 +338,49 @@ export async function getGameById(id: number): Promise<GameSearchResult | null> 
     minAge: game.min_age,
     weight: game.weight ? Number(game.weight) : null,
     rankOverall: game.rank_overall,
-    designers: game.game_designers.map(gd => ({
-      id: gd.designers.id,
-      name: gd.designers.name
-    })),
-    artists: game.game_artists.map(ga => ({
-      id: ga.artists.id,
-      name: ga.artists.name
-    })),
-    publishers: game.game_publishers.map(gp => ({
-      id: gp.publishers.id,
-      name: gp.publishers.name
-    })),
-    mechanics: game.game_mechanics.map(gm => ({
-      id: gm.mechanics.id,
-      name: gm.mechanics.name
-    })),
-    categories: game.game_categories.map(gc => ({
-      id: gc.categories.id,
-      name: gc.categories.name
-    })),
-    awards: game.game_awards.map(ga => ({
+    designers: game.game_designers.map((gd) => ({ id: gd.designers.id, name: gd.designers.name, bggUrl: gd.designers.bgg_url ?? null })),
+    artists: game.game_artists.map((ga) => ({ id: ga.artists.id, name: ga.artists.name, bggUrl: ga.artists.bgg_url ?? null })),
+    publishers: game.game_publishers.map((gp) => ({ id: gp.publishers.id, name: gp.publishers.name, bggUrl: gp.publishers.bgg_url ?? null })),
+    mechanics: game.game_mechanics.map((gm) => ({ id: gm.mechanics.id, name: gm.mechanics.name, bggUrl: gm.mechanics.bgg_url ?? null })),
+    categories: game.game_categories.map((gc) => ({ id: gc.categories.id, name: gc.categories.name, bggUrl: gc.categories.bgg_url ?? null })),
+    awards: game.game_awards.map((ga) => ({
       id: ga.awards.id,
       awardName: ga.awards.award_name,
       awardYear: ga.awards.award_year,
       awardType: ga.awards.award_type,
-      awardCategory: ga.awards.award_category
+      awardCategory: ga.awards.award_category,
+      bggUrl: ga.awards.bgg_url ?? null
     })),
-    genreRankings: game.game_genre_ranks.map(ggr => ({
-      genre: {
-        id: ggr.genres.id,
-        name: ggr.genres.name
-      },
+    genreRankings: game.game_genre_ranks.map((ggr) => ({
+      genre: { id: ggr.genres.id, name: ggr.genres.name, bggUrl: ggr.genres.bgg_url ?? null },
       rankInGenre: ggr.rank_in_genre
     })),
-    bestPlayerCounts: game.game_best_player_counts.map(bpc => bpc.player_count),
+    bestPlayerCounts: game.game_best_player_counts.map((bpc) => bpc.player_count),
     createdAt: game.created_at,
     updatedAt: game.updated_at
   };
 }
 
-/**
- * BGGIDでゲーム詳細を取得
- */
 export async function getGameByBggId(bggId: number): Promise<GameSearchResult | null> {
   const game = await prisma.games.findUnique({
     where: { bgg_id: bggId },
     include: {
-      game_designers: {
-        include: {
-          designers: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_artists: {
-        include: {
-          artists: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_publishers: {
-        include: {
-          publishers: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_mechanics: {
-        include: {
-          mechanics: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_categories: {
-        include: {
-          categories: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
+      game_designers: { include: { designers: { select: { id: true, name: true, bgg_url: true } } } },
+      game_artists: { include: { artists: { select: { id: true, name: true, bgg_url: true } } } },
+      game_publishers: { include: { publishers: { select: { id: true, name: true, bgg_url: true } } } },
+      game_mechanics: { include: { mechanics: { select: { id: true, name: true, bgg_url: true } } } },
+      game_categories: { include: { categories: { select: { id: true, name: true, bgg_url: true } } } },
       game_awards: {
         include: {
           awards: {
-            select: {
-              id: true,
-              award_name: true,
-              award_year: true,
-              award_type: true,
-              award_category: true
-            }
+            select: { id: true, award_name: true, award_year: true, award_type: true, award_category: true, bgg_url: true }
           }
         }
       },
-      game_genre_ranks: {
-        include: {
-          genres: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
-      },
-      game_best_player_counts: {
-        select: {
-          player_count: true
-        },
-        orderBy: {
-          player_count: 'asc'
-        }
-      }
+      game_genre_ranks: { include: { genres: { select: { id: true, name: true, bgg_url: true } } } },
+      game_best_player_counts: { select: { player_count: true }, orderBy: { player_count: 'asc' } }
     }
   });
-
   if (!game) return null;
 
   return {
@@ -817,42 +400,34 @@ export async function getGameByBggId(bggId: number): Promise<GameSearchResult | 
     minAge: game.min_age,
     weight: game.weight ? Number(game.weight) : null,
     rankOverall: game.rank_overall,
-    designers: game.game_designers.map(gd => ({
-      id: gd.designers.id,
-      name: gd.designers.name
-    })),
-    artists: game.game_artists.map(ga => ({
-      id: ga.artists.id,
-      name: ga.artists.name
-    })),
-    publishers: game.game_publishers.map(gp => ({
-      id: gp.publishers.id,
-      name: gp.publishers.name
-    })),
-    mechanics: game.game_mechanics.map(gm => ({
-      id: gm.mechanics.id,
-      name: gm.mechanics.name
-    })),
-    categories: game.game_categories.map(gc => ({
-      id: gc.categories.id,
-      name: gc.categories.name
-    })),
-    awards: game.game_awards.map(ga => ({
+    designers: game.game_designers.map((gd) => ({ id: gd.designers.id, name: gd.designers.name, bggUrl: gd.designers.bgg_url ?? null })),
+    artists: game.game_artists.map((ga) => ({ id: ga.artists.id, name: ga.artists.name, bggUrl: ga.artists.bgg_url ?? null })),
+    publishers: game.game_publishers.map((gp) => ({ id: gp.publishers.id, name: gp.publishers.name, bggUrl: gp.publishers.bgg_url ?? null })),
+    mechanics: game.game_mechanics.map((gm) => ({ id: gm.mechanics.id, name: gm.mechanics.name, bggUrl: gm.mechanics.bgg_url ?? null })),
+    categories: game.game_categories.map((gc) => ({ id: gc.categories.id, name: gc.categories.name, bggUrl: gc.categories.bgg_url ?? null })),
+    awards: game.game_awards.map((ga) => ({
       id: ga.awards.id,
       awardName: ga.awards.award_name,
       awardYear: ga.awards.award_year,
       awardType: ga.awards.award_type,
-      awardCategory: ga.awards.award_category
+      awardCategory: ga.awards.award_category,
+      bggUrl: ga.awards.bgg_url ?? null
     })),
-    genreRankings: game.game_genre_ranks.map(ggr => ({
-      genre: {
-        id: ggr.genres.id,
-        name: ggr.genres.name
-      },
+    genreRankings: game.game_genre_ranks.map((ggr) => ({
+      genre: { id: ggr.genres.id, name: ggr.genres.name, bggUrl: ggr.genres.bgg_url ?? null },
       rankInGenre: ggr.rank_in_genre
     })),
-    bestPlayerCounts: game.game_best_player_counts.map(bpc => bpc.player_count),
+    bestPlayerCounts: game.game_best_player_counts.map((bpc) => bpc.player_count),
     createdAt: game.created_at,
     updatedAt: game.updated_at
   };
+}
+
+export interface GameSearchResponse {
+  games: GameSearchResult[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }

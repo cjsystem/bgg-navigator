@@ -376,7 +376,37 @@ const formatCount = (n: number) => {
   return `${formatted}k`;
 };
 
-// ゲームカードコンポーネント（口コミ数・評価数を追加）
+// （GameCardの直前あたりに追加）BGGリンク付きで名前を描画するヘルパー
+const renderCommaSeparatedWithLinks = <T,>(
+    items: T[],
+    getName: (x: T) => string,
+    getUrl: (x: T) => string | undefined
+) => {
+  return items.map((item, idx) => {
+    const name = getName(item);
+    const url = getUrl(item);
+    return (
+        <span key={`${name}-${idx}`}>
+        {url ? (
+            <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+                title="BGGで開く"
+            >
+              {name}
+            </a>
+        ) : (
+            name
+        )}
+          {idx < items.length - 1 ? ', ' : ''}
+      </span>
+    );
+  });
+};
+
+// ゲームカードコンポーネント（各名称をbgg_urlリンクに差し替え）
 function GameCard({ game }: { game: GameSearchResult }) {
   return (
       <div className="border rounded-lg p-4 shadow-sm">
@@ -405,59 +435,126 @@ function GameCard({ game }: { game: GameSearchResult }) {
               {game.minPlayers && game.maxPlayers && (
                   <span>プレイヤー数: {game.minPlayers}-{game.maxPlayers}人 | </span>
               )}
-              {game.avgRating && <span>評価: {game.avgRating}/10 | </span>}
+              {game.avgRating && <span>評価: {game.avgRating} / 10 | </span>}
               {typeof game.ratingsCount === 'number' && (
                   <span>評価数: {formatCount(game.ratingsCount)} | </span>
               )}
               {typeof game.commentsCount === 'number' && (
                   <span>口コミ数: {formatCount(game.commentsCount)} | </span>
               )}
-              {game.rankOverall && <span>ランキング: {game.rankOverall}位</span>}
+              {game.rankOverall && <span>ランキング: {game.rankOverall}位 | </span>}
+              {game.weight && <span>重さ: {game.weight} / 5 | </span>}
             </div>
 
             {game.designers.length > 0 && (
                 <div className="text-sm mt-2">
-                  <strong>デザイナー:</strong> {game.designers.map(d => d.name).join(', ')}
+                  <strong>デザイナー:</strong>{' '}
+                  {renderCommaSeparatedWithLinks(
+                      game.designers as any[],
+                      (d: any) => d.name,
+                      // Prismaのselectで bgg_url または bggUrl を含めておけばそのまま使えます
+                      (d: any) => d.bgg_url ?? d.bggUrl
+                  )}
                 </div>
             )}
 
             {game.artists.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>アーティスト:</strong> {game.artists.map(a => a.name).join(', ')}
+                  <strong>アーティスト:</strong>{' '}
+                  {renderCommaSeparatedWithLinks(
+                      game.artists as any[],
+                      (a: any) => a.name,
+                      (a: any) => a.bgg_url ?? a.bggUrl
+                  )}
                 </div>
             )}
 
             {game.publishers.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>パブリッシャー:</strong> {game.publishers.map(p => p.name).join(', ')}
+                  <strong>パブリッシャー:</strong>{' '}
+                  {renderCommaSeparatedWithLinks(
+                      game.publishers as any[],
+                      (p: any) => p.name,
+                      (p: any) => p.bgg_url ?? p.bggUrl
+                  )}
                 </div>
             )}
 
             {game.mechanics.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>メカニクス:</strong> {game.mechanics.map(m => m.name).join(', ')}
+                  <strong>メカニクス:</strong>{' '}
+                  {renderCommaSeparatedWithLinks(
+                      game.mechanics as any[],
+                      (m: any) => m.name,
+                      (m: any) => m.bgg_url ?? m.bggUrl
+                  )}
                 </div>
             )}
 
             {game.categories.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>カテゴリ:</strong> {game.categories.map(c => c.name).join(', ')}
+                  <strong>カテゴリ:</strong>{' '}
+                  {renderCommaSeparatedWithLinks(
+                      game.categories as any[],
+                      (c: any) => c.name,
+                      (c: any) => c.bgg_url ?? c.bggUrl
+                  )}
                 </div>
             )}
 
             {game.genreRankings.length > 0 && (
                 <div className="text-sm mt-1">
                   <strong>ジャンル別ランキング:</strong>{' '}
-                  {game.genreRankings.map(gr => `${gr.genre.name}:${gr.rankInGenre}位`).join(', ')}
+                  {game.genreRankings.map((gr: any, idx: number) => {
+                    const g = gr.genre;
+                    const url = g?.bgg_url ?? g?.bggUrl;
+                    return (
+                        <span key={`${g?.name}-${idx}`}>
+                    {url ? (
+                        <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                            title="BGGで開く"
+                        >
+                          {g?.name}
+                        </a>
+                    ) : (
+                        g?.name
+                    )}
+                          :{gr.rankInGenre ?? '-'}位
+                          {idx < game.genreRankings.length - 1 ? ', ' : ''}
+                  </span>
+                    );
+                  })}
                 </div>
             )}
 
             {game.awards.length > 0 && (
                 <div className="text-sm mt-1">
                   <strong>受賞歴:</strong>{' '}
-                  {game.awards.map(a => `${a.awardName} (${a.awardYear}) - ${a.awardType}`).join('; ')}
+                  {game.awards.map((a, idx) => (
+                      <span key={a.id}>
+        {a.bggUrl ? (
+            <a
+                href={a.bggUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+                title="BGGで開く"
+            >
+              {a.awardYear} {a.awardName}
+            </a>
+        ) : (
+            a.awardName
+        )} - {a.awardType}
+                        {idx < game.awards.length - 1 ? '; ' : ''}
+      </span>
+                  ))}
                 </div>
             )}
+
 
             {game.bestPlayerCounts.length > 0 && (
                 <div className="text-sm mt-1">
@@ -469,4 +566,3 @@ function GameCard({ game }: { game: GameSearchResult }) {
       </div>
   );
 }
-
