@@ -586,6 +586,9 @@ function GameCard({ game }: { game: GameSearchResult }) {
               {game.minPlayers && game.maxPlayers && (
                   <span>プレイヤー数: <span className="text-gray-100">{game.minPlayers}-{game.maxPlayers}</span>人 | </span>
               )}
+              {game.bestPlayerCounts.length > 0 && (
+                  <span>ベスト人数: <span className="text-gray-100">{game.bestPlayerCounts.join(', ')}</span>人 | </span>
+              )}
               {game.avgRating && <span>評価: <span className="text-gray-100">{game.avgRating}</span> / 10 | </span>}
               {typeof game.ratingsCount === 'number' && (
                   <span>評価数: <span className="text-gray-100">{formatCount(game.ratingsCount)}</span> | </span>
@@ -720,13 +723,6 @@ function GameCard({ game }: { game: GameSearchResult }) {
                               {idx < game.awards.length - 1 ? '; ' : ''}
                     </span>
                         ))}
-                      </div>
-                  )}
-
-                  {game.bestPlayerCounts.length > 0 && (
-                      <div className="text-sm mt-1">
-                        <strong className="text-sky-300">ベストプレイヤー数:</strong>{' '}
-                        <span className="text-gray-200">{game.bestPlayerCounts.join(', ')}</span>人
                       </div>
                   )}
                 </>
