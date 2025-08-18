@@ -47,13 +47,18 @@ export default function GenreSelect({ selectedGenre, onGenreChange }: GenreSelec
     onGenreChange(e.target.value);
   };
 
+  // AwardSearch の select と同じ見た目
+  const selectCls =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 p-2 rounded text-sm ' +
+      'focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-800 disabled:text-gray-400';
+
   return (
       <div>
         <select
             value={selectedGenre}
             onChange={handleSelectChange}
             disabled={loading}
-            className="w-full border p-2 rounded bg-white text-gray-700 disabled:bg-gray-100"
+            className={selectCls}
         >
           <option value="">ジャンルを選択...</option>
           {loading ? (
@@ -69,23 +74,23 @@ export default function GenreSelect({ selectedGenre, onGenreChange }: GenreSelec
           )}
         </select>
 
-        {/* エラー表示 */}
+        {/* エラー表示（ダーク配色） */}
         {error && (
-            <div className="mt-1 text-sm text-red-600">
+            <div className="mt-1 text-sm text-red-300">
               エラー: {error}
               <button
                   onClick={loadGenres}
-                  className="ml-2 text-blue-600 hover:text-blue-800 underline"
+                  className="ml-2 text-sky-400 hover:text-sky-300 underline"
               >
                 再読み込み
               </button>
             </div>
         )}
 
-        {/* 選択済み表示 */}
+        {/* 選択済み表示（ダーク配色） */}
         {selectedGenre && (
             <div className="mt-2">
-          <span className="inline-block bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-sm">
+          <span className="inline-block bg-indigo-900/30 text-indigo-300 px-2 py-1 rounded-full text-sm">
             選択中: {selectedGenre}
           </span>
             </div>

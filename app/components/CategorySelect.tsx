@@ -20,7 +20,6 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 初回読み込み時に全カテゴリを取得
   useEffect(() => {
     loadCategories();
   }, []);
@@ -31,11 +30,9 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
 
     try {
       const response = await fetch('/api/categories');
-
       if (!response.ok) {
         throw new Error(`API Error: ${response.status}`);
       }
-
       const data: Category[] = await response.json();
       setCategories(data);
     } catch (error) {
@@ -46,13 +43,11 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
     }
   };
 
-  // 検索フィルタリング
   const filteredCategories = categories.filter(category =>
       !selectedCategories.includes(category.name) &&
       category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // 外側クリックでドロップダウンを閉じる
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -60,12 +55,10 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
         setSearchTerm('');
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // カテゴリを選択
   const selectCategory = (categoryName: string) => {
     if (!selectedCategories.includes(categoryName)) {
       onCategoriesChange([...selectedCategories, categoryName]);
@@ -74,28 +67,39 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
     setSearchTerm('');
   };
 
-  // 選択済みカテゴリを削除
   const removeCategory = (categoryName: string) => {
     onCategoriesChange(selectedCategories.filter(name => name !== categoryName));
   };
 
-  // 全選択解除
   const clearAll = () => {
     onCategoriesChange([]);
   };
 
+  // AwardSearch/MechanicSelect に合わせたダーク配色共通クラス
+  const triggerCls =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 p-2 rounded text-left flex items-center justify-between ' +
+      'hover:bg-gray-800 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:opacity-50';
+  const panelBase =
+      'absolute z-20 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg mt-1';
+  const headerRowCls = 'p-2 text-xs text-gray-400 bg-gray-800';
+  const listItemCls =
+      'p-2 text-sm text-gray-100 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-b-0';
+  const inputBase =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-1 rounded text-sm ' +
+      'focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500';
+
   return (
       <div className="relative" ref={dropdownRef}>
-        {/* 選択済みカテゴリタグ */}
+        {/* 選択済みタグ（ダーク配色） */}
         {selectedCategories.length > 0 && (
             <div className="mb-2">
               <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-300">
               選択済み: {selectedCategories.length}件
             </span>
                 <button
                     onClick={clearAll}
-                    className="text-sm text-red-600 hover:text-red-800"
+                    className="text-sm text-red-300 hover:text-red-200"
                     type="button"
                 >
                   すべて削除
@@ -105,12 +109,12 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
                 {selectedCategories.map((categoryName) => (
                     <span
                         key={categoryName}
-                        className="bg-teal-100 text-teal-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                        className="bg-teal-900/30 text-teal-300 px-2 py-1 rounded-full text-sm flex items-center gap-1"
                     >
                 {categoryName}
                       <button
                           onClick={() => removeCategory(categoryName)}
-                          className="text-teal-600 hover:text-teal-800 font-bold"
+                          className="text-teal-300 hover:text-teal-200 font-bold"
                           type="button"
                       >
                   ×
@@ -121,15 +125,15 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
             </div>
         )}
 
-        {/* プルダウン選択ボタン */}
+        {/* トリガーボタン（AwardSearchのselect風見た目） */}
         <div className="relative">
           <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="w-full border p-2 rounded bg-white text-left flex items-center justify-between hover:bg-gray-50"
+              className={triggerCls}
               disabled={loading}
           >
-          <span className="text-gray-700">
+          <span className="text-gray-100">
             {loading ? 'カテゴリ読み込み中...' : 'カテゴリを選択...'}
           </span>
             <svg
@@ -142,30 +146,30 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
             </svg>
           </button>
 
-          {/* エラー表示 */}
+          {/* エラー表示（ダーク配色） */}
           {error && (
-              <div className="mt-1 text-sm text-red-600">
+              <div className="mt-1 text-sm text-red-300">
                 エラー: {error}
                 <button
                     onClick={loadCategories}
-                    className="ml-2 text-blue-600 hover:text-blue-800 underline"
+                    className="ml-2 text-sky-400 hover:text-sky-300 underline"
                 >
                   再読み込み
                 </button>
               </div>
           )}
 
-          {/* ドロップダウンリスト */}
+          {/* ドロップダウン（AwardSearch と同系ダーク見た目） */}
           {isOpen && !loading && !error && (
-              <div className="absolute z-20 w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1">
+              <div className={panelBase}>
                 {/* 検索ボックス */}
-                <div className="p-2 border-b">
+                <div className="p-2 border-b border-gray-800">
                   <input
                       type="text"
                       placeholder="カテゴリ名で絞り込み..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full border p-1 rounded text-sm"
+                      className={inputBase}
                       autoFocus
                   />
                 </div>
@@ -174,25 +178,25 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
                 <div className="max-h-60 overflow-y-auto">
                   {filteredCategories.length > 0 ? (
                       <>
-                        <div className="p-2 text-xs text-gray-500 bg-gray-50">
+                        <div className={headerRowCls}>
                           {filteredCategories.length}件のカテゴリ
                         </div>
                         {filteredCategories.map((category) => (
                             <div
                                 key={category.id}
                                 onClick={() => selectCategory(category.name)}
-                                className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 text-sm"
+                                className={listItemCls}
                             >
                               {category.name}
                             </div>
                         ))}
                       </>
                   ) : searchTerm ? (
-                      <div className="p-2 text-gray-500 text-sm text-center">
+                      <div className="p-2 text-gray-400 text-sm text-center">
                         「{searchTerm}」に該当するカテゴリが見つかりません
                       </div>
                   ) : (
-                      <div className="p-2 text-gray-500 text-sm text-center">
+                      <div className="p-2 text-gray-400 text-sm text-center">
                         すべてのカテゴリが選択済みです
                       </div>
                   )}
