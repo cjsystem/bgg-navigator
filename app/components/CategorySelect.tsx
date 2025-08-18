@@ -90,41 +90,6 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
 
   return (
       <div className="relative" ref={dropdownRef}>
-        {/* 選択済みタグ（ダーク配色） */}
-        {selectedCategories.length > 0 && (
-            <div className="mb-2">
-              <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-300">
-              選択済み: {selectedCategories.length}件
-            </span>
-                <button
-                    onClick={clearAll}
-                    className="text-sm text-red-300 hover:text-red-200"
-                    type="button"
-                >
-                  すべて削除
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
-                {selectedCategories.map((categoryName) => (
-                    <span
-                        key={categoryName}
-                        className="bg-teal-900/30 text-teal-300 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-                    >
-                {categoryName}
-                      <button
-                          onClick={() => removeCategory(categoryName)}
-                          className="text-teal-300 hover:text-teal-200 font-bold"
-                          type="button"
-                      >
-                  ×
-                </button>
-              </span>
-                ))}
-              </div>
-            </div>
-        )}
-
         {/* トリガーボタン（AwardSearchのselect風見た目） */}
         <div className="relative">
           <button
@@ -204,6 +169,41 @@ export default function CategorySelect({ selectedCategories, onCategoriesChange 
               </div>
           )}
         </div>
+
+        {/* 選択済みタグ（ダーク配色） - プルダウンの下に移動 */}
+        {selectedCategories.length > 0 && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-300">
+              選択済み: {selectedCategories.length}件
+            </span>
+                <button
+                    onClick={clearAll}
+                    className="text-sm text-red-300 hover:text-red-200"
+                    type="button"
+                >
+                  すべて削除
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
+                {selectedCategories.map((categoryName) => (
+                    <span
+                        key={categoryName}
+                        className="bg-teal-900/30 text-teal-300 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                {categoryName}
+                      <button
+                          onClick={() => removeCategory(categoryName)}
+                          className="text-teal-300 hover:text-teal-200 font-bold"
+                          type="button"
+                      >
+                  ×
+                </button>
+              </span>
+                ))}
+              </div>
+            </div>
+        )}
       </div>
   );
 }
