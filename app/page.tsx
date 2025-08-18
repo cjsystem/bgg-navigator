@@ -275,44 +275,48 @@ export default function GameSearch() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-200 mb-1">デザイナー</label>
-            <DesignerAutoComplete
-                selectedDesigners={selectedDesigners}
-                onDesignersChange={setSelectedDesigners}
-            />
-          </div>
+          {/* 検索項目（デザイナー/アーティスト/パブリッシャー/メカニクス/カテゴリ）を2行にレイアウト */}
+          {/* 検索項目（デザイナー/アーティスト/パブリッシャー/メカニクス/カテゴリ）を2行にレイアウト */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-1">デザイナー</label>
+              <DesignerAutoComplete
+                  selectedDesigners={selectedDesigners}
+                  onDesignersChange={setSelectedDesigners}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-200 mb-1">アーティスト</label>
-            <ArtistAutoComplete
-                selectedArtists={selectedArtists}
-                onArtistsChange={setSelectedArtists}
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-1">アーティスト</label>
+              <ArtistAutoComplete
+                  selectedArtists={selectedArtists}
+                  onArtistsChange={setSelectedArtists}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-200 mb-1">パブリッシャー</label>
-            <PublisherAutoComplete
-                selectedPublishers={selectedPublishers}
-                onPublishersChange={setSelectedPublishers}
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-1">パブリッシャー</label>
+              <PublisherAutoComplete
+                  selectedPublishers={selectedPublishers}
+                  onPublishersChange={setSelectedPublishers}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-200 mb-1">メカニクス</label>
-            <MechanicSelect
-                selectedMechanics={selectedMechanics}
-                onMechanicsChange={setSelectedMechanics}
-            />
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-1">メカニクス</label>
+              <MechanicSelect
+                  selectedMechanics={selectedMechanics}
+                  onMechanicsChange={setSelectedMechanics}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-200 mb-1">カテゴリ</label>
-            <CategorySelect
-                selectedCategories={selectedCategories}
-                onCategoriesChange={setSelectedCategories}
-            />
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-1">カテゴリ</label>
+              <CategorySelect
+                  selectedCategories={selectedCategories}
+                  onCategoriesChange={setSelectedCategories}
+              />
+            </div>
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 
 interface Artist {
   id: number;
@@ -17,11 +17,18 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
   const [artists, setArtists] = useState<Artist[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 共通クラス（ダーク配色）
-  const inputBase =
-      'w-full border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500';
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 共通クラス（ダーク配色・Designer版と統一）
+  const inputLikeWrapper =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 rounded text-sm ' +
+      'focus-within:ring-1 focus-within:ring-sky-500 focus-within:border-sky-500 px-2 py-2';
+  const innerInputCls =
+      'bg-transparent text-gray-100 placeholder-gray-500 outline-none border-none p-0 m-0 ' +
+      'min-w-[8ch] flex-1';
   const panelBase =
       'absolute z-20 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1';
   const itemBase =
@@ -56,7 +63,13 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+          dropdownRef.current &&
+          !dropdownRef.current.contains(target) &&
+          containerRef.current &&
+          !containerRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
@@ -70,50 +83,89 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
     }
     setSearchTerm('');
     setIsOpen(false);
+    inputRef.current?.focus();
   };
 
   const removeArtist = (artistName: string) => {
     onArtistsChange(selectedArtists.filter(name => name !== artistName));
+    inputRef.current?.focus();
+  };
+
+  const handleContainerClick = () => {
+    inputRef.current?.focus();
+    if (artists.length > 0 && searchTerm) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && searchTerm.length === 0 && selectedArtists.length > 0) {
+      e.preventDefault();
+      const last = selectedArtists[selectedArtists.length - 1];
+      removeArtist(last);
+    }
+    if (e.key === 'Enter' && artists.length > 0 && searchTerm.length > 0) {
+      e.preventDefault();
+      const first = artists.find(a => !selectedArtists.includes(a.name));
+      if (first) selectArtist(first.name);
+    }
+    if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
   };
 
   return (
-      <div className="relative" ref={dropdownRef}>
-        {/* 選択済みタグ */}
-        {selectedArtists.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {selectedArtists.map((artistName) => (
-                  <span
-                      key={artistName}
-                      className="bg-green-900/30 text-green-300 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-                  >
+      <div className="relative">
+        {/* タグを入力欄内に表示 */}
+        <div
+            ref={containerRef}
+            className={inputLikeWrapper}
+            onClick={handleContainerClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') inputRef.current?.focus();
+            }}
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedArtists.map((artistName) => (
+                <span
+                    key={artistName}
+                    className="bg-green-900/30 text-green-300 px-2 py-1 rounded-full text-xs flex items-center gap-1"
+                >
               {artistName}
-                    <button
-                        onClick={() => removeArtist(artistName)}
-                        className="text-green-300 hover:text-green-200 font-bold"
-                        type="button"
-                    >
+                  <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeArtist(artistName);
+                      }}
+                      className="text-green-300 hover:text-green-200 font-bold"
+                      type="button"
+                      aria-label={`${artistName} を削除`}
+                  >
                 ×
               </button>
             </span>
-              ))}
-            </div>
-        )}
+            ))}
 
-        {/* 検索入力 */}
-        <input
-            type="text"
-            placeholder="アーティスト名を入力..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onFocus={() => {
-              if (artists.length > 0) setIsOpen(true);
-            }}
-            className={inputBase}
-        />
+            <input
+                ref={inputRef}
+                type="text"
+                placeholder={selectedArtists.length ? '' : 'アーティスト名を入力...'}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => {
+                  if (artists.length > 0 && searchTerm) setIsOpen(true);
+                }}
+                onKeyDown={handleKeyDown}
+                className={innerInputCls}
+            />
+          </div>
+        </div>
 
         {/* ドロップダウン */}
         {isOpen && (
-            <div className={panelBase}>
+            <div ref={dropdownRef} className={panelBase}>
               {loading ? (
                   <div className="p-2 text-gray-400">検索中...</div>
               ) : artists.length > 0 ? (
