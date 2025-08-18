@@ -406,9 +406,19 @@ const renderCommaSeparatedWithLinks = <T,>(
   });
 };
 
-// ゲームカードコンポーネント（各名称をbgg_urlリンクに差し替え）
-// ゲームカード（本文テキストのコントラストを改善、強調はアクセント色）
+// ゲームカード（「もっと見る」で後半を折りたたみ表示）
 function GameCard({ game }: { game: GameSearchResult }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const hasMore =
+      (game.artists?.length ?? 0) > 0 ||
+      (game.publishers?.length ?? 0) > 0 ||
+      (game.mechanics?.length ?? 0) > 0 ||
+      (game.categories?.length ?? 0) > 0 ||
+      (game.genreRankings?.length ?? 0) > 0 ||
+      (game.awards?.length ?? 0) > 0 ||
+      (game.bestPlayerCounts?.length ?? 0) > 0;
+
   return (
       <div className="border border-gray-800 rounded-lg p-4 shadow-sm bg-black/30">
         <div className="flex items-start space-x-4">
@@ -436,9 +446,6 @@ function GameCard({ game }: { game: GameSearchResult }) {
               {game.minPlayers && game.maxPlayers && (
                   <span>プレイヤー数: <span className="text-gray-100">{game.minPlayers}-{game.maxPlayers}</span>人 | </span>
               )}
-              {game.bestPlayerCounts.length > 0 && (
-                  <span>ベストプレイ人数: <span className="text-gray-100">{game.bestPlayerCounts.join(', ')}</span>人 | </span>
-              )}
               {game.avgRating && <span>評価: <span className="text-gray-100">{game.avgRating}</span> / 10 | </span>}
               {typeof game.ratingsCount === 'number' && (
                   <span>評価数: <span className="text-gray-100">{formatCount(game.ratingsCount)}</span> | </span>
@@ -461,101 +468,128 @@ function GameCard({ game }: { game: GameSearchResult }) {
                 </div>
             )}
 
-            {game.artists.length > 0 && (
-                <div className="text-sm mt-1">
-                  <strong className="text-sky-300">アーティスト:</strong>{' '}
-                  {renderCommaSeparatedWithLinks(
-                      game.artists as any[],
-                      (a: any) => a.name,
-                      (a: any) => a.bgg_url ?? a.bggUrl
+            {/* 展開トグル（中央寄せ） */}
+            {hasMore && (
+                <div className="mt-2 flex justify-center">
+                  <button
+                      type="button"
+                      onClick={() => setExpanded((v) => !v)}
+                      className="text-sky-400 hover:text-sky-300 text-sm"
+                      aria-expanded={expanded}
+                  >
+                    {expanded ? '閉じる ▲' : 'もっと見る ▼'}
+                  </button>
+                </div>
+            )}
+
+            {/* ここから下は「もっと見る」で展開 */}
+            {expanded && (
+                <>
+                  {game.artists.length > 0 && (
+                      <div className="text-sm mt-3">
+                        <strong className="text-sky-300">アーティスト:</strong>{' '}
+                        {renderCommaSeparatedWithLinks(
+                            game.artists as any[],
+                            (a: any) => a.name,
+                            (a: any) => a.bgg_url ?? a.bggUrl
+                        )}
+                      </div>
                   )}
-                </div>
-            )}
 
-            {game.publishers.length > 0 && (
-                <div className="text-sm mt-1">
-                  <strong className="text-sky-300">パブリッシャー:</strong>{' '}
-                  {renderCommaSeparatedWithLinks(
-                      game.publishers as any[],
-                      (p: any) => p.name,
-                      (p: any) => p.bgg_url ?? p.bggUrl
+                  {game.publishers.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <strong className="text-sky-300">パブリッシャー:</strong>{' '}
+                        {renderCommaSeparatedWithLinks(
+                            game.publishers as any[],
+                            (p: any) => p.name,
+                            (p: any) => p.bgg_url ?? p.bggUrl
+                        )}
+                      </div>
                   )}
-                </div>
-            )}
 
-            {game.mechanics.length > 0 && (
-                <div className="text-sm mt-1">
-                  <strong className="text-sky-300">メカニクス:</strong>{' '}
-                  {renderCommaSeparatedWithLinks(
-                      game.mechanics as any[],
-                      (m: any) => m.name,
-                      (m: any) => m.bgg_url ?? m.bggUrl
+                  {game.mechanics.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <strong className="text-sky-300">メカニクス:</strong>{' '}
+                        {renderCommaSeparatedWithLinks(
+                            game.mechanics as any[],
+                            (m: any) => m.name,
+                            (m: any) => m.bgg_url ?? m.bggUrl
+                        )}
+                      </div>
                   )}
-                </div>
-            )}
 
-            {game.categories.length > 0 && (
-                <div className="text-sm mt-1">
-                  <strong className="text-sky-300">カテゴリ:</strong>{' '}
-                  {renderCommaSeparatedWithLinks(
-                      game.categories as any[],
-                      (c: any) => c.name,
-                      (c: any) => c.bgg_url ?? c.bggUrl
+                  {game.categories.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <strong className="text-sky-300">カテゴリ:</strong>{' '}
+                        {renderCommaSeparatedWithLinks(
+                            game.categories as any[],
+                            (c: any) => c.name,
+                            (c: any) => c.bgg_url ?? c.bggUrl
+                        )}
+                      </div>
                   )}
-                </div>
-            )}
 
-            {game.genreRankings.length > 0 && (
-                <div className="text-sm mt-1">
-                  <strong className="text-sky-300">ジャンル別ランキング:</strong>{' '}
-                  {game.genreRankings.map((gr: any, idx: number) => {
-                    const g = gr.genre;
-                    const url = g?.bgg_url ?? g?.bggUrl;
-                    return (
-                        <span key={`${g?.name}-${idx}`}>
-                    {url ? (
-                        <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sky-400 hover:text-sky-300"
-                            title="BGGで開く"
-                        >
-                          {g?.name}
-                        </a>
-                    ) : (
-                        g?.name
-                    )}
-                          :{gr.rankInGenre ?? '-'}位
-                          {idx < game.genreRankings.length - 1 ? ', ' : ''}
-                  </span>
-                    );
-                  })}
-                </div>
-            )}
+                  {game.genreRankings.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <strong className="text-sky-300">ジャンル別ランキング:</strong>{' '}
+                        {game.genreRankings.map((gr: any, idx: number) => {
+                          const g = gr.genre;
+                          const url = g?.bgg_url ?? g?.bggUrl;
+                          return (
+                              <span key={`${g?.name}-${idx}`}>
+                        {url ? (
+                            <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sky-400 hover:text-sky-300"
+                                title="BGGで開く"
+                            >
+                              {g?.name}
+                            </a>
+                        ) : (
+                            g?.name
+                        )}
+                                :{gr.rankInGenre ?? '-'}位
+                                {idx < game.genreRankings.length - 1 ? ', ' : ''}
+                      </span>
+                          );
+                        })}
+                      </div>
+                  )}
 
-            {game.awards.length > 0 && (
-                <div className="text-sm mt-1">
-                  <strong className="text-sky-300">受賞歴:</strong>{' '}
-                  {game.awards.map((a, idx) => (
-                      <span key={a.id}>
-        {a.bggUrl ? (
-            <a
-                href={a.bggUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sky-400 hover:text-sky-300"
-                title="BGGで開く"
-            >
-              {a.awardYear} {a.awardName}
-            </a>
-        ) : (
-            <span className="text-gray-200">{a.awardName}</span>
-        )} - <span className="text-gray-200">{a.awardType}</span>
-                        {idx < game.awards.length - 1 ? '; ' : ''}
-      </span>
-                  ))}
-                </div>
+                  {game.awards.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <strong className="text-sky-300">受賞歴:</strong>{' '}
+                        {game.awards.map((a, idx) => (
+                            <span key={a.id}>
+                      {a.bggUrl ? (
+                          <a
+                              href={a.bggUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sky-400 hover:text-sky-300"
+                              title="BGGで開く"
+                          >
+                            {a.awardYear} {a.awardName}
+                          </a>
+                      ) : (
+                          <span className="text-gray-200">{a.awardName}</span>
+                      )}{' '}
+                              - <span className="text-gray-200">{a.awardType}</span>
+                              {idx < game.awards.length - 1 ? '; ' : ''}
+                    </span>
+                        ))}
+                      </div>
+                  )}
+
+                  {game.bestPlayerCounts.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <strong className="text-sky-300">ベストプレイヤー数:</strong>{' '}
+                        <span className="text-gray-200">{game.bestPlayerCounts.join(', ')}</span>人
+                      </div>
+                  )}
+                </>
             )}
           </div>
         </div>
