@@ -9,6 +9,7 @@ import MechanicSelect from "./components/MechanicSelect";
 import CategorySelect from "./components/CategorySelect";
 import GenreSelect from "./components/GenreSelect";
 import AwardSearch from "./components/AwardSearch";
+import GameNameAutoComplete from './components/GameNameAutoComplete';
 
 export default function GameSearch() {
   const [searchResults, setSearchResults] = useState<GameSearchResponse | null>(null);
@@ -111,12 +112,9 @@ export default function GameSearch() {
         <div className="mb-6 grid grid-cols-1 gap-4">
           {/* 1行目 */}
           <div className="grid grid-cols-3 gap-4">
-            <input
-                type="text"
-                placeholder="ゲーム名"
+            <GameNameAutoComplete
                 value={searchParams.name}
-                onChange={(e) => setSearchParams({ ...searchParams, name: e.target.value })}
-                className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
+                onChange={(val) => setSearchParams({ ...searchParams, name: val })}
             />
 
             <input
