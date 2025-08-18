@@ -34,6 +34,14 @@ export interface GameSearchFilters {
   awardName?: string;
   awardType?: string;
 
+  weightMin?: number;
+  weightMax?: number;
+  ratingsCountMin?: number;
+  ratingsCountMax?: number;
+  commentsCountMin?: number;
+  commentsCountMax?: number;
+
+
   // ページング
   page?: number;
   limit?: number;
@@ -139,6 +147,12 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     awardYear,
     awardName,
     awardType,
+    weightMin,
+    weightMax,
+    ratingsCountMin,
+    ratingsCountMax,
+    commentsCountMin,
+    commentsCountMax,
     page = 1,
     limit = 20
   } = filters;
@@ -335,8 +349,31 @@ export async function searchGames(filters: GameSearchFilters = {}): Promise<Game
     });
   }
 
+  // 重さ（weight）
+  if (weightMin !== undefined) {
+    whereConditions.AND.push({ weight: { gte: weightMin } });
+  }
+  if (weightMax !== undefined) {
+    whereConditions.AND.push({ weight: { lte: weightMax } });
+  }
 
-    // ANDが空の場合は削除
+  // 投票数（ratings_count）
+  if (ratingsCountMin !== undefined) {
+    whereConditions.AND.push({ ratings_count: { gte: ratingsCountMin } });
+  }
+  if (ratingsCountMax !== undefined) {
+    whereConditions.AND.push({ ratings_count: { lte: ratingsCountMax } });
+  }
+
+  // 口コミ数（comments_count）
+  if (commentsCountMin !== undefined) {
+    whereConditions.AND.push({ comments_count: { gte: commentsCountMin } });
+  }
+  if (commentsCountMax !== undefined) {
+    whereConditions.AND.push({ comments_count: { lte: commentsCountMax } });
+  }
+
+  // ANDが空の場合は削除
   if (whereConditions.AND.length === 0) {
     delete whereConditions.AND;
   }

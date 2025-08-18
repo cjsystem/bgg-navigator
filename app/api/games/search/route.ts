@@ -95,6 +95,30 @@ export async function GET(request: NextRequest) {
       filters.awardType = searchParams.get('awardType')!;
     }
 
+    // weight（0〜5.0想定）
+    if (searchParams.get('weightMin')) {
+      filters.weightMin = parseFloat(searchParams.get('weightMin')!);
+    }
+    if (searchParams.get('weightMax')) {
+      filters.weightMax = parseFloat(searchParams.get('weightMax')!);
+    }
+
+    // ratingsCount（投票数）
+    if (searchParams.get('ratingsCountMin')) {
+      filters.ratingsCountMin = parseInt(searchParams.get('ratingsCountMin')!, 10);
+    }
+    if (searchParams.get('ratingsCountMax')) {
+      filters.ratingsCountMax = parseInt(searchParams.get('ratingsCountMax')!, 10);
+    }
+
+    // commentsCount（口コミ数）
+    if (searchParams.get('commentsCountMin')) {
+      filters.commentsCountMin = parseInt(searchParams.get('commentsCountMin')!, 10);
+    }
+    if (searchParams.get('commentsCountMax')) {
+      filters.commentsCountMax = parseInt(searchParams.get('commentsCountMax')!, 10);
+    }
+
     // ページング
     if (searchParams.get('page')) {
       filters.page = parseInt(searchParams.get('page')!);

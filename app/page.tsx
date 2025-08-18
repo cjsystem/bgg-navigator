@@ -16,10 +16,17 @@ export default function GameSearch() {
   const [searchParams, setSearchParams] = useState({
     name: '',
     playerCount: '',
-    bestPlayerCount: '',              // ベストプレイヤー数を追加
+    bestPlayerCount: '',
     minRating: '',
     yearMin: '',
     yearMax: '',
+    // 追加: weight / ratingsCount / commentsCount の最小最大
+    weightMin: '',
+    weightMax: '',
+    ratingsCountMin: '',
+    ratingsCountMax: '',
+    commentsCountMin: '',
+    commentsCountMax: '',
     page: 1,
     limit: 10
   });
@@ -44,42 +51,28 @@ export default function GameSearch() {
 
       if (searchParams.name) queryParams.append('name', searchParams.name);
       if (searchParams.playerCount) queryParams.append('playerCount', searchParams.playerCount);
-      if (searchParams.bestPlayerCount) queryParams.append('bestPlayerCount', searchParams.bestPlayerCount); // 追加
+      if (searchParams.bestPlayerCount) queryParams.append('bestPlayerCount', searchParams.bestPlayerCount);
       if (searchParams.minRating) queryParams.append('minRating', searchParams.minRating);
       if (searchParams.yearMin) queryParams.append('yearMin', searchParams.yearMin);
       if (searchParams.yearMax) queryParams.append('yearMax', searchParams.yearMax);
 
-      // デザイナー名をカンマ区切りで追加
-      if (selectedDesigners.length > 0) {
-        queryParams.append('designers', selectedDesigners.join(','));
-      }
+      // 追加: weight / ratingsCount / commentsCount（min/max）
+      if (searchParams.weightMin) queryParams.append('weightMin', searchParams.weightMin);
+      if (searchParams.weightMax) queryParams.append('weightMax', searchParams.weightMax);
+      if (searchParams.ratingsCountMin) queryParams.append('ratingsCountMin', searchParams.ratingsCountMin);
+      if (searchParams.ratingsCountMax) queryParams.append('ratingsCountMax', searchParams.ratingsCountMax);
+      if (searchParams.commentsCountMin) queryParams.append('commentsCountMin', searchParams.commentsCountMin);
+      if (searchParams.commentsCountMax) queryParams.append('commentsCountMax', searchParams.commentsCountMax);
 
-      // アーティスト名をカンマ区切りで追加
-      if (selectedArtists.length > 0) {
-        queryParams.append('artists', selectedArtists.join(','));
-      }
+      // 既存の複合条件
+      if (selectedDesigners.length > 0) queryParams.append('designers', selectedDesigners.join(','));
+      if (selectedArtists.length > 0) queryParams.append('artists', selectedArtists.join(','));
+      if (selectedPublishers.length > 0) queryParams.append('publishers', selectedPublishers.join(','));
+      if (selectedMechanics.length > 0) queryParams.append('mechanics', selectedMechanics.join(','));
+      if (selectedCategories.length > 0) queryParams.append('categories', selectedCategories.join(','));
+      if (selectedGenre) queryParams.append('genre', selectedGenre);
 
-      // パブリッシャー名をカンマ区切りで追加
-      if (selectedPublishers.length > 0) {
-        queryParams.append('publishers', selectedPublishers.join(','));
-      }
-
-      // メカニクス名をカンマ区切りで追加
-      if (selectedMechanics.length > 0) {
-        queryParams.append('mechanics', selectedMechanics.join(','));
-      }
-
-      // カテゴリ名をカンマ区切りで追加
-      if (selectedCategories.length > 0) {
-        queryParams.append('categories', selectedCategories.join(','));
-      }
-
-      // ジャンル名を追加
-      if (selectedGenre) {
-        queryParams.append('genre', selectedGenre);
-      }
-
-      // 賞情報を追加
+      // 賞
       if (awardYear) queryParams.append('awardYear', awardYear);
       if (awardName) queryParams.append('awardName', awardName);
       if (awardType) queryParams.append('awardType', awardType);
@@ -177,7 +170,87 @@ export default function GameSearch() {
             </div>
           </div>
 
-          {/* 3行目: ジャンル選択 */}
+          {/* 3行目: 重さ/投票数/口コミ数（min/max） */}
+          <div className="grid grid-cols-3 gap-4">
+            {/* weight */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">重さ（0〜5）</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    placeholder="最小"
+                    value={searchParams.weightMin}
+                    onChange={(e) => setSearchParams({ ...searchParams, weightMin: e.target.value })}
+                    className="border p-2 rounded"
+                />
+                <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    placeholder="最大"
+                    value={searchParams.weightMax}
+                    onChange={(e) => setSearchParams({ ...searchParams, weightMax: e.target.value })}
+                    className="border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            {/* ratingsCount */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">投票数</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="最小"
+                    value={searchParams.ratingsCountMin}
+                    onChange={(e) => setSearchParams({ ...searchParams, ratingsCountMin: e.target.value })}
+                    className="border p-2 rounded"
+                />
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="最大"
+                    value={searchParams.ratingsCountMax}
+                    onChange={(e) => setSearchParams({ ...searchParams, ratingsCountMax: e.target.value })}
+                    className="border p-2 rounded"
+                />
+              </div>
+            </div>
+
+            {/* commentsCount */}
+            <div>
+              <label className="block text-sm text-gray-700 mb-1">口コミ数</label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="最小"
+                    value={searchParams.commentsCountMin}
+                    onChange={(e) => setSearchParams({ ...searchParams, commentsCountMin: e.target.value })}
+                    className="border p-2 rounded"
+                />
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    placeholder="最大"
+                    value={searchParams.commentsCountMax}
+                    onChange={(e) => setSearchParams({ ...searchParams, commentsCountMax: e.target.value })}
+                    className="border p-2 rounded"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 4行目: ジャンル */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               ジャンル
@@ -188,7 +261,7 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 4行目: 賞検索 */}
+          {/* 5行目: 受賞 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               受賞歴
@@ -203,55 +276,41 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 5行目: デザイナー検索 */}
+          {/* 6行目以降: 既存の各オートコンプリート/セレクト */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              デザイナー
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">デザイナー</label>
             <DesignerAutoComplete
                 selectedDesigners={selectedDesigners}
                 onDesignersChange={setSelectedDesigners}
             />
           </div>
 
-          {/* 6行目: アーティスト検索 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              アーティスト
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">アーティスト</label>
             <ArtistAutoComplete
                 selectedArtists={selectedArtists}
                 onArtistsChange={setSelectedArtists}
             />
           </div>
 
-          {/* 7行目: パブリッシャー検索 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              パブリッシャー
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">パブリッシャー</label>
             <PublisherAutoComplete
                 selectedPublishers={selectedPublishers}
                 onPublishersChange={setSelectedPublishers}
             />
           </div>
 
-          {/* 8行目: メカニクス選択 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              メカニクス
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">メカニクス</label>
             <MechanicSelect
                 selectedMechanics={selectedMechanics}
                 onMechanicsChange={setSelectedMechanics}
             />
           </div>
 
-          {/* 9行目: カテゴリ選択 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              カテゴリ
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">カテゴリ</label>
             <CategorySelect
                 selectedCategories={selectedCategories}
                 onCategoriesChange={setSelectedCategories}
@@ -266,12 +325,6 @@ export default function GameSearch() {
         >
           {loading ? '検索中...' : '検索'}
         </button>
-
-        {/* 検索条件の説明 */}
-        <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-700">
-          <p><strong>プレイヤー数</strong>：指定した人数でプレイ可能なゲーム</p>
-          <p><strong>ベストプレイヤー数</strong>：指定した人数が最適なプレイヤー数として推奨されているゲーム</p>
-        </div>
 
         {/* 検索結果 */}
         {searchResults && (
@@ -288,7 +341,6 @@ export default function GameSearch() {
                 ))}
               </div>
 
-              {/* ページング */}
               <div className="mt-6 flex justify-center space-x-2">
                 <button
                     onClick={() => setSearchParams({ ...searchParams, page: searchParams.page - 1 })}
@@ -299,8 +351,8 @@ export default function GameSearch() {
                 </button>
 
                 <span className="px-3 py-1">
-                  {searchResults.currentPage} / {searchResults.totalPages}
-                </span>
+              {searchResults.currentPage} / {searchResults.totalPages}
+            </span>
 
                 <button
                     onClick={() => setSearchParams({ ...searchParams, page: searchResults.currentPage + 1 })}
@@ -316,7 +368,15 @@ export default function GameSearch() {
   );
 }
 
-// ゲームカードコンポーネント（変更なし）
+// 数値をk表記にフォーマット（例: 7100 -> 7.1k、7000 -> 7k）
+const formatCount = (n: number) => {
+  if (n < 1000) return n.toLocaleString();
+  const value = n / 1000;
+  const formatted = n % 1000 === 0 ? value.toFixed(0) : value.toFixed(1);
+  return `${formatted}k`;
+};
+
+// ゲームカードコンポーネント（口コミ数・評価数を追加）
 function GameCard({ game }: { game: GameSearchResult }) {
   return (
       <div className="border rounded-lg p-4 shadow-sm">
@@ -346,6 +406,12 @@ function GameCard({ game }: { game: GameSearchResult }) {
                   <span>プレイヤー数: {game.minPlayers}-{game.maxPlayers}人 | </span>
               )}
               {game.avgRating && <span>評価: {game.avgRating}/10 | </span>}
+              {typeof game.ratingsCount === 'number' && (
+                  <span>評価数: {formatCount(game.ratingsCount)} | </span>
+              )}
+              {typeof game.commentsCount === 'number' && (
+                  <span>口コミ数: {formatCount(game.commentsCount)} | </span>
+              )}
               {game.rankOverall && <span>ランキング: {game.rankOverall}位</span>}
             </div>
 
@@ -381,13 +447,15 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.genreRankings.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>ジャンル別ランキング:</strong> {game.genreRankings.map(gr => `${gr.genre.name}:${gr.rankInGenre}位`).join(', ')}
+                  <strong>ジャンル別ランキング:</strong>{' '}
+                  {game.genreRankings.map(gr => `${gr.genre.name}:${gr.rankInGenre}位`).join(', ')}
                 </div>
             )}
 
             {game.awards.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>受賞歴:</strong> {game.awards.map(a => `${a.awardName} (${a.awardYear}) - ${a.awardType}`).join('; ')}
+                  <strong>受賞歴:</strong>{' '}
+                  {game.awards.map(a => `${a.awardName} (${a.awardYear}) - ${a.awardType}`).join('; ')}
                 </div>
             )}
 
@@ -401,3 +469,4 @@ function GameCard({ game }: { game: GameSearchResult }) {
       </div>
   );
 }
+
