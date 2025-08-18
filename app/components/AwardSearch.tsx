@@ -124,12 +124,21 @@ export default function AwardSearch({
     setAwardNameSearchTerm('');
   };
 
+  // ダークテーマ向け共通クラス
+  const labelCls = 'block text-xs font-medium text-slate-200 mb-1';
+  const inputCls =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded text-sm ' +
+      'focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500';
+  const selectCls =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 p-2 rounded text-sm ' +
+      'focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 disabled:bg-gray-800 disabled:text-gray-400';
+
   return (
       <div>
         <div className="grid grid-cols-3 gap-3">
           {/* 受賞年 */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className={labelCls}>
               受賞年
             </label>
             <input
@@ -137,7 +146,7 @@ export default function AwardSearch({
                 placeholder="1998"
                 value={awardYear}
                 onChange={(e) => onAwardYearChange(e.target.value)}
-                className="w-full border p-2 rounded text-sm"
+                className={inputCls}
                 min="1900"
                 max="2030"
             />
@@ -145,7 +154,7 @@ export default function AwardSearch({
 
           {/* 賞名（オートコンプリート） */}
           <div className="relative" ref={awardNameRef}>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className={labelCls}>
               賞名
             </label>
             <input
@@ -156,26 +165,26 @@ export default function AwardSearch({
                 onFocus={() => {
                   if (awardNames.length > 0) setIsAwardNameOpen(true);
                 }}
-                className="w-full border p-2 rounded text-sm"
+                className={inputCls}
             />
 
-            {/* ドロップダウンリスト */}
+            {/* ドロップダウンリスト（ダークテーマ配色） */}
             {isAwardNameOpen && (
-                <div className="absolute z-20 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto mt-1">
+                <div className="absolute z-20 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
                   {awardNameLoading ? (
-                      <div className="p-2 text-gray-500 text-sm">検索中...</div>
+                      <div className="p-2 text-gray-400 text-sm">検索中...</div>
                   ) : awardNames.length > 0 ? (
                       awardNames.map((award, index) => (
                           <div
                               key={index}
                               onClick={() => selectAwardName(award.name)}
-                              className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0 text-sm"
+                              className="p-2 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-b-0 text-sm text-gray-100"
                           >
                             {award.name}
                           </div>
                       ))
                   ) : awardNameSearchTerm.length >= 1 ? (
-                      <div className="p-2 text-gray-500 text-sm">該当する賞が見つかりません</div>
+                      <div className="p-2 text-gray-400 text-sm">該当する賞が見つかりません</div>
                   ) : null}
                 </div>
             )}
@@ -183,14 +192,14 @@ export default function AwardSearch({
 
           {/* 賞タイプ */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">
+            <label className={labelCls}>
               タイプ
             </label>
             <select
                 value={awardType}
                 onChange={(e) => onAwardTypeChange(e.target.value)}
                 disabled={awardTypesLoading}
-                className="w-full border p-2 rounded bg-white text-sm disabled:bg-gray-100"
+                className={selectCls}
             >
               <option value="">選択...</option>
               {awardTypesLoading ? (
@@ -206,29 +215,29 @@ export default function AwardSearch({
           </div>
         </div>
 
-        {/* 選択済み表示とクリアボタン */}
+        {/* 選択済み表示とクリアボタン（ダークテーマに合わせて調整） */}
         {(awardYear || awardName || awardType) && (
             <div className="mt-2 flex items-center justify-between">
               <div className="flex flex-wrap gap-2">
                 {awardYear && (
-                    <span className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs">
+                    <span className="inline-block bg-rose-900/30 text-rose-300 px-2 py-1 rounded-full text-xs">
                 年: {awardYear}
               </span>
                 )}
                 {awardName && (
-                    <span className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs">
+                    <span className="inline-block bg-rose-900/30 text-rose-300 px-2 py-1 rounded-full text-xs">
                 賞: {awardName}
               </span>
                 )}
                 {awardType && (
-                    <span className="inline-block bg-rose-100 text-rose-800 px-2 py-1 rounded-full text-xs">
+                    <span className="inline-block bg-rose-900/30 text-rose-300 px-2 py-1 rounded-full text-xs">
                 {awardType}
               </span>
                 )}
               </div>
               <button
                   onClick={clearAll}
-                  className="text-xs text-red-600 hover:text-red-800"
+                  className="text-xs text-red-300 hover:text-red-200"
                   type="button"
               >
                 すべてクリア

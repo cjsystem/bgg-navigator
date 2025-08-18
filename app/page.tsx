@@ -104,8 +104,8 @@ export default function GameSearch() {
   };
 
   return (
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">ボードゲーム検索</h1>
+      <div className="p-6 text-gray-100"> {/* 黒背景での可読性向上 */}
+        <h1 className="text-2xl font-bold mb-6 text-white">ボードゲーム検索</h1>
 
         {/* 検索フォーム */}
         <div className="mb-6 grid grid-cols-1 gap-4">
@@ -116,7 +116,7 @@ export default function GameSearch() {
                 placeholder="ゲーム名"
                 value={searchParams.name}
                 onChange={(e) => setSearchParams({ ...searchParams, name: e.target.value })}
-                className="border p-2 rounded"
+                className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
             />
 
             <input
@@ -124,7 +124,7 @@ export default function GameSearch() {
                 placeholder="プレイヤー数"
                 value={searchParams.playerCount}
                 onChange={(e) => setSearchParams({ ...searchParams, playerCount: e.target.value })}
-                className="border p-2 rounded"
+                className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 min="1"
                 max="20"
             />
@@ -134,7 +134,7 @@ export default function GameSearch() {
                 placeholder="ベストプレイヤー数"
                 value={searchParams.bestPlayerCount}
                 onChange={(e) => setSearchParams({ ...searchParams, bestPlayerCount: e.target.value })}
-                className="border p-2 rounded"
+                className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 min="1"
                 max="20"
             />
@@ -148,7 +148,7 @@ export default function GameSearch() {
                 step="0.1"
                 value={searchParams.minRating}
                 onChange={(e) => setSearchParams({ ...searchParams, minRating: e.target.value })}
-                className="border p-2 rounded"
+                className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
             />
 
             <div className="grid grid-cols-2 gap-2">
@@ -157,7 +157,7 @@ export default function GameSearch() {
                   placeholder="発売年（開始）"
                   value={searchParams.yearMin}
                   onChange={(e) => setSearchParams({ ...searchParams, yearMin: e.target.value })}
-                  className="border p-2 rounded"
+                  className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
               />
 
               <input
@@ -165,7 +165,7 @@ export default function GameSearch() {
                   placeholder="発売年（終了）"
                   value={searchParams.yearMax}
                   onChange={(e) => setSearchParams({ ...searchParams, yearMax: e.target.value })}
-                  className="border p-2 rounded"
+                  className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function GameSearch() {
           <div className="grid grid-cols-3 gap-4">
             {/* weight */}
             <div>
-              <label className="block text-sm text-gray-700 mb-1">重さ（0〜5）</label>
+              <label className="block text-sm text-slate-200 mb-1">重さ（0〜5）</label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                     type="number"
@@ -184,7 +184,7 @@ export default function GameSearch() {
                     placeholder="最小"
                     value={searchParams.weightMin}
                     onChange={(e) => setSearchParams({ ...searchParams, weightMin: e.target.value })}
-                    className="border p-2 rounded"
+                    className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 />
                 <input
                     type="number"
@@ -194,14 +194,14 @@ export default function GameSearch() {
                     placeholder="最大"
                     value={searchParams.weightMax}
                     onChange={(e) => setSearchParams({ ...searchParams, weightMax: e.target.value })}
-                    className="border p-2 rounded"
+                    className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 />
               </div>
             </div>
 
             {/* ratingsCount */}
             <div>
-              <label className="block text-sm text-gray-700 mb-1">投票数</label>
+              <label className="block text-sm text-slate-200 mb-1">投票数</label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                     type="number"
@@ -210,7 +210,7 @@ export default function GameSearch() {
                     placeholder="最小"
                     value={searchParams.ratingsCountMin}
                     onChange={(e) => setSearchParams({ ...searchParams, ratingsCountMin: e.target.value })}
-                    className="border p-2 rounded"
+                    className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 />
                 <input
                     type="number"
@@ -219,14 +219,14 @@ export default function GameSearch() {
                     placeholder="最大"
                     value={searchParams.ratingsCountMax}
                     onChange={(e) => setSearchParams({ ...searchParams, ratingsCountMax: e.target.value })}
-                    className="border p-2 rounded"
+                    className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 />
               </div>
             </div>
 
             {/* commentsCount */}
             <div>
-              <label className="block text-sm text-gray-700 mb-1">口コミ数</label>
+              <label className="block text-sm text-slate-2 00 mb-1">口コミ数</label>
               <div className="grid grid-cols-2 gap-2">
                 <input
                     type="number"
@@ -235,7 +235,7 @@ export default function GameSearch() {
                     placeholder="最小"
                     value={searchParams.commentsCountMin}
                     onChange={(e) => setSearchParams({ ...searchParams, commentsCountMin: e.target.value })}
-                    className="border p-2 rounded"
+                    className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 />
                 <input
                     type="number"
@@ -244,15 +244,15 @@ export default function GameSearch() {
                     placeholder="最大"
                     value={searchParams.commentsCountMax}
                     onChange={(e) => setSearchParams({ ...searchParams, commentsCountMax: e.target.value })}
-                    className="border p-2 rounded"
+                    className="border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
                 />
               </div>
             </div>
           </div>
 
-          {/* 4行目: ジャンル */}
+          {/* 4行目以降のラベル色も見やすく */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-200 mb-1">
               ジャンル
             </label>
             <GenreSelect
@@ -261,9 +261,8 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 5行目: 受賞 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-200 mb-1">
               受賞歴
             </label>
             <AwardSearch
@@ -276,9 +275,8 @@ export default function GameSearch() {
             />
           </div>
 
-          {/* 6行目以降: 既存の各オートコンプリート/セレクト */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">デザイナー</label>
+            <label className="block text-sm font-medium text-slate-200 mb-1">デザイナー</label>
             <DesignerAutoComplete
                 selectedDesigners={selectedDesigners}
                 onDesignersChange={setSelectedDesigners}
@@ -286,7 +284,7 @@ export default function GameSearch() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">アーティスト</label>
+            <label className="block text-sm font-medium text-slate-200 mb-1">アーティスト</label>
             <ArtistAutoComplete
                 selectedArtists={selectedArtists}
                 onArtistsChange={setSelectedArtists}
@@ -294,7 +292,7 @@ export default function GameSearch() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">パブリッシャー</label>
+            <label className="block text-sm font-medium text-slate-200 mb-1">パブリッシャー</label>
             <PublisherAutoComplete
                 selectedPublishers={selectedPublishers}
                 onPublishersChange={setSelectedPublishers}
@@ -302,7 +300,7 @@ export default function GameSearch() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">メカニクス</label>
+            <label className="block text-sm font-medium text-slate-200 mb-1">メカニクス</label>
             <MechanicSelect
                 selectedMechanics={selectedMechanics}
                 onMechanicsChange={setSelectedMechanics}
@@ -310,7 +308,7 @@ export default function GameSearch() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">カテゴリ</label>
+            <label className="block text-sm font-medium text-slate-200 mb-1">カテゴリ</label>
             <CategorySelect
                 selectedCategories={selectedCategories}
                 onCategoriesChange={setSelectedCategories}
@@ -321,7 +319,7 @@ export default function GameSearch() {
         <button
             onClick={handleInitialSearch}
             disabled={loading}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-500 disabled:opacity-50"
         >
           {loading ? '検索中...' : '検索'}
         </button>
@@ -330,7 +328,7 @@ export default function GameSearch() {
         {searchResults && (
             <div className="mt-6">
               <div className="mb-4">
-                <p className="text-gray-600">
+                <p className="text-gray-300">
                   {searchResults.totalCount}件中 {((searchResults.currentPage - 1) * searchParams.limit + 1)} - {Math.min(searchResults.currentPage * searchParams.limit, searchResults.totalCount)}件を表示
                 </p>
               </div>
@@ -345,19 +343,19 @@ export default function GameSearch() {
                 <button
                     onClick={() => setSearchParams({ ...searchParams, page: searchParams.page - 1 })}
                     disabled={!searchResults.hasPreviousPage || loading}
-                    className="px-3 py-1 border rounded disabled:opacity-50"
+                    className="px-3 py-1 border border-gray-700 text-gray-100 rounded hover:bg-gray-800 disabled:opacity-50"
                 >
                   前へ
                 </button>
 
-                <span className="px-3 py-1">
-              {searchResults.currentPage} / {searchResults.totalPages}
-            </span>
+                <span className="px-3 py-1 text-gray-200">
+                  {searchResults.currentPage} / {searchResults.totalPages}
+                </span>
 
                 <button
                     onClick={() => setSearchParams({ ...searchParams, page: searchResults.currentPage + 1 })}
                     disabled={!searchResults.hasNextPage || loading}
-                    className="px-3 py-1 border rounded disabled:opacity-50"
+                    className="px-3 py-1 border border-gray-700 text-gray-100 rounded hover:bg-gray-800 disabled:opacity-50"
                 >
                   {loading ? '読込中...' : '次へ'}
                 </button>
@@ -407,9 +405,10 @@ const renderCommaSeparatedWithLinks = <T,>(
 };
 
 // ゲームカードコンポーネント（各名称をbgg_urlリンクに差し替え）
+// ゲームカード（本文テキストのコントラストを改善、強調はアクセント色）
 function GameCard({ game }: { game: GameSearchResult }) {
   return (
-      <div className="border rounded-lg p-4 shadow-sm">
+      <div className="border border-gray-800 rounded-lg p-4 shadow-sm bg-black/30">
         <div className="flex items-start space-x-4">
           {game.imageUrl && (
               <img
@@ -423,36 +422,35 @@ function GameCard({ game }: { game: GameSearchResult }) {
           )}
 
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-lg font-semibold text-white">
               {game.primaryName}
               {game.japaneseName && (
-                  <span className="text-sm text-gray-600 ml-2">({game.japaneseName})</span>
+                  <span className="text-sm text-gray-300 ml-2">({game.japaneseName})</span>
               )}
             </h3>
 
-            <div className="text-sm text-gray-600 mt-1">
-              {game.yearReleased && <span>発売年: {game.yearReleased} | </span>}
+            <div className="text-sm text-gray-300 mt-1">
+              {game.yearReleased && <span>発売年: <span className="text-gray-100">{game.yearReleased}</span> | </span>}
               {game.minPlayers && game.maxPlayers && (
-                  <span>プレイヤー数: {game.minPlayers}-{game.maxPlayers}人 | </span>
+                  <span>プレイヤー数: <span className="text-gray-100">{game.minPlayers}-{game.maxPlayers}</span>人 | </span>
               )}
-              {game.avgRating && <span>評価: {game.avgRating} / 10 | </span>}
+              {game.avgRating && <span>評価: <span className="text-gray-100">{game.avgRating}</span> / 10 | </span>}
               {typeof game.ratingsCount === 'number' && (
-                  <span>評価数: {formatCount(game.ratingsCount)} | </span>
+                  <span>評価数: <span className="text-gray-100">{formatCount(game.ratingsCount)}</span> | </span>
               )}
               {typeof game.commentsCount === 'number' && (
-                  <span>口コミ数: {formatCount(game.commentsCount)} | </span>
+                  <span>口コミ数: <span className="text-gray-100">{formatCount(game.commentsCount)}</span> | </span>
               )}
-              {game.rankOverall && <span>ランキング: {game.rankOverall}位 | </span>}
-              {game.weight && <span>重さ: {game.weight} / 5 | </span>}
+              {game.rankOverall && <span>ランキング: <span className="text-gray-100">{game.rankOverall}</span>位 | </span>}
+              {game.weight && <span>重さ: <span className="text-gray-100">{game.weight}</span> / 5</span>}
             </div>
 
             {game.designers.length > 0 && (
                 <div className="text-sm mt-2">
-                  <strong>デザイナー:</strong>{' '}
+                  <strong className="text-sky-300">デザイナー:</strong>{' '}
                   {renderCommaSeparatedWithLinks(
                       game.designers as any[],
                       (d: any) => d.name,
-                      // Prismaのselectで bgg_url または bggUrl を含めておけばそのまま使えます
                       (d: any) => d.bgg_url ?? d.bggUrl
                   )}
                 </div>
@@ -460,7 +458,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.artists.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>アーティスト:</strong>{' '}
+                  <strong className="text-sky-300">アーティスト:</strong>{' '}
                   {renderCommaSeparatedWithLinks(
                       game.artists as any[],
                       (a: any) => a.name,
@@ -471,7 +469,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.publishers.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>パブリッシャー:</strong>{' '}
+                  <strong className="text-sky-300">パブリッシャー:</strong>{' '}
                   {renderCommaSeparatedWithLinks(
                       game.publishers as any[],
                       (p: any) => p.name,
@@ -482,7 +480,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.mechanics.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>メカニクス:</strong>{' '}
+                  <strong className="text-sky-300">メカニクス:</strong>{' '}
                   {renderCommaSeparatedWithLinks(
                       game.mechanics as any[],
                       (m: any) => m.name,
@@ -493,7 +491,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.categories.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>カテゴリ:</strong>{' '}
+                  <strong className="text-sky-300">カテゴリ:</strong>{' '}
                   {renderCommaSeparatedWithLinks(
                       game.categories as any[],
                       (c: any) => c.name,
@@ -504,7 +502,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.genreRankings.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>ジャンル別ランキング:</strong>{' '}
+                  <strong className="text-sky-300">ジャンル別ランキング:</strong>{' '}
                   {game.genreRankings.map((gr: any, idx: number) => {
                     const g = gr.genre;
                     const url = g?.bgg_url ?? g?.bggUrl;
@@ -515,7 +513,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
                             href={url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
+                            className="text-sky-400 hover:text-sky-300"
                             title="BGGで開く"
                         >
                           {g?.name}
@@ -533,7 +531,7 @@ function GameCard({ game }: { game: GameSearchResult }) {
 
             {game.awards.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>受賞歴:</strong>{' '}
+                  <strong className="text-sky-300">受賞歴:</strong>{' '}
                   {game.awards.map((a, idx) => (
                       <span key={a.id}>
         {a.bggUrl ? (
@@ -541,24 +539,24 @@ function GameCard({ game }: { game: GameSearchResult }) {
                 href={a.bggUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-sky-400 hover:text-sky-300"
                 title="BGGで開く"
             >
               {a.awardYear} {a.awardName}
             </a>
         ) : (
-            a.awardName
-        )} - {a.awardType}
+            <span className="text-gray-200">{a.awardName}</span>
+        )} - <span className="text-gray-200">{a.awardType}</span>
                         {idx < game.awards.length - 1 ? '; ' : ''}
       </span>
                   ))}
                 </div>
             )}
 
-
             {game.bestPlayerCounts.length > 0 && (
                 <div className="text-sm mt-1">
-                  <strong>ベストプレイヤー数:</strong> {game.bestPlayerCounts.join(', ')}人
+                  <strong className="text-sky-300">ベストプレイヤー数:</strong>{' '}
+                  <span className="text-gray-200">{game.bestPlayerCounts.join(', ')}</span>人
                 </div>
             )}
           </div>

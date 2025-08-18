@@ -19,7 +19,14 @@ export default function PublisherAutoComplete({ selectedPublishers, onPublishers
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // パブリッシャー検索
+  // 共通クラス（ダーク配色）
+  const inputBase =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500';
+  const panelBase =
+      'absolute z-20 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1';
+  const itemBase =
+      'p-2 text-sm text-gray-100 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-b-0';
+
   const searchPublishers = async (search: string) => {
     setLoading(true);
     try {
@@ -34,14 +41,12 @@ export default function PublisherAutoComplete({ selectedPublishers, onPublishers
     }
   };
 
-  // 検索文字列が変更された時
   useEffect(() => {
     if (searchTerm.length >= 1) {
       const timer = setTimeout(() => {
         searchPublishers(searchTerm);
         setIsOpen(true);
-      }, 300); // 300ms遅延でデバウンス
-
+      }, 300);
       return () => clearTimeout(timer);
     } else {
       setPublishers([]);
@@ -49,19 +54,16 @@ export default function PublisherAutoComplete({ selectedPublishers, onPublishers
     }
   }, [searchTerm]);
 
-  // 外側クリックでドロップダウンを閉じる
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // パブリッシャーを選択
   const selectPublisher = (publisherName: string) => {
     if (!selectedPublishers.includes(publisherName)) {
       onPublishersChange([...selectedPublishers, publisherName]);
@@ -70,25 +72,24 @@ export default function PublisherAutoComplete({ selectedPublishers, onPublishers
     setIsOpen(false);
   };
 
-  // 選択済みパブリッシャーを削除
   const removePublisher = (publisherName: string) => {
     onPublishersChange(selectedPublishers.filter(name => name !== publisherName));
   };
 
   return (
       <div className="relative" ref={dropdownRef}>
-        {/* 選択済みパブリッシャータグ */}
+        {/* 選択済みタグ */}
         {selectedPublishers.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {selectedPublishers.map((publisherName) => (
                   <span
                       key={publisherName}
-                      className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                      className="bg-purple-900/30 text-purple-300 px-2 py-1 rounded-full text-sm flex items-center gap-1"
                   >
               {publisherName}
                     <button
                         onClick={() => removePublisher(publisherName)}
-                        className="text-purple-600 hover:text-purple-800 font-bold"
+                        className="text-purple-300 hover:text-purple-200 font-bold"
                         type="button"
                     >
                 ×
@@ -107,14 +108,14 @@ export default function PublisherAutoComplete({ selectedPublishers, onPublishers
             onFocus={() => {
               if (publishers.length > 0) setIsOpen(true);
             }}
-            className="w-full border p-2 rounded"
+            className={inputBase}
         />
 
-        {/* ドロップダウンリスト */}
+        {/* ドロップダウン */}
         {isOpen && (
-            <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
+            <div className={panelBase}>
               {loading ? (
-                  <div className="p-2 text-gray-500">検索中...</div>
+                  <div className="p-2 text-gray-400">検索中...</div>
               ) : publishers.length > 0 ? (
                   publishers
                       .filter(publisher => !selectedPublishers.includes(publisher.name))
@@ -122,13 +123,13 @@ export default function PublisherAutoComplete({ selectedPublishers, onPublishers
                           <div
                               key={publisher.id}
                               onClick={() => selectPublisher(publisher.name)}
-                              className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              className={itemBase}
                           >
                             {publisher.name}
                           </div>
                       ))
               ) : searchTerm.length >= 1 ? (
-                  <div className="p-2 text-gray-500">該当するパブリッシャーが見つかりません</div>
+                  <div className="p-2 text-gray-400">該当するパブリッシャーが見つかりません</div>
               ) : null}
             </div>
         )}

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -20,7 +19,14 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // アーティスト検索
+  // 共通クラス（ダーク配色）
+  const inputBase =
+      'w-full border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 p-2 rounded text-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500';
+  const panelBase =
+      'absolute z-20 w-full bg-gray-900 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1';
+  const itemBase =
+      'p-2 text-sm text-gray-100 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-b-0';
+
   const searchArtists = async (search: string) => {
     setLoading(true);
     try {
@@ -35,14 +41,12 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
     }
   };
 
-  // 検索文字列が変更された時
   useEffect(() => {
     if (searchTerm.length >= 1) {
       const timer = setTimeout(() => {
         searchArtists(searchTerm);
         setIsOpen(true);
-      }, 300); // 300ms遅延でデバウンス
-
+      }, 300);
       return () => clearTimeout(timer);
     } else {
       setArtists([]);
@@ -50,19 +54,16 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
     }
   }, [searchTerm]);
 
-  // 外側クリックでドロップダウンを閉じる
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // アーティストを選択
   const selectArtist = (artistName: string) => {
     if (!selectedArtists.includes(artistName)) {
       onArtistsChange([...selectedArtists, artistName]);
@@ -71,25 +72,24 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
     setIsOpen(false);
   };
 
-  // 選択済みアーティストを削除
   const removeArtist = (artistName: string) => {
     onArtistsChange(selectedArtists.filter(name => name !== artistName));
   };
 
   return (
       <div className="relative" ref={dropdownRef}>
-        {/* 選択済みアーティストタグ */}
+        {/* 選択済みタグ */}
         {selectedArtists.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {selectedArtists.map((artistName) => (
                   <span
                       key={artistName}
-                      className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                      className="bg-green-900/30 text-green-300 px-2 py-1 rounded-full text-sm flex items-center gap-1"
                   >
               {artistName}
                     <button
                         onClick={() => removeArtist(artistName)}
-                        className="text-green-600 hover:text-green-800 font-bold"
+                        className="text-green-300 hover:text-green-200 font-bold"
                         type="button"
                     >
                 ×
@@ -108,14 +108,14 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
             onFocus={() => {
               if (artists.length > 0) setIsOpen(true);
             }}
-            className="w-full border p-2 rounded"
+            className={inputBase}
         />
 
-        {/* ドロップダウンリスト */}
+        {/* ドロップダウン */}
         {isOpen && (
-            <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto mt-1">
+            <div className={panelBase}>
               {loading ? (
-                  <div className="p-2 text-gray-500">検索中...</div>
+                  <div className="p-2 text-gray-400">検索中...</div>
               ) : artists.length > 0 ? (
                   artists
                       .filter(artist => !selectedArtists.includes(artist.name))
@@ -123,13 +123,13 @@ export default function ArtistAutoComplete({ selectedArtists, onArtistsChange }:
                           <div
                               key={artist.id}
                               onClick={() => selectArtist(artist.name)}
-                              className="p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+                              className={itemBase}
                           >
                             {artist.name}
                           </div>
                       ))
               ) : searchTerm.length >= 1 ? (
-                  <div className="p-2 text-gray-500">該当するアーティストが見つかりません</div>
+                  <div className="p-2 text-gray-400">該当するアーティストが見つかりません</div>
               ) : null}
             </div>
         )}
